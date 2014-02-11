@@ -1,13 +1,15 @@
 ﻿using Moq;
 using NUnit.Framework;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using TradingCore.Model;
 using TradingCore.Repository;
 
-namespace Test
+namespace Test.Core
 {
     [TestFixture]
-    public class TickTests
+    public class TickRepositoryTests
     {
         [Test]
         public void GetTick_FromRepository()
@@ -57,7 +59,53 @@ namespace Test
             tickRepository.Verify(x => x.GetAll(), Times.Once);
         }
 
+        [Test]
+        public void GetTick_ByMember_FromReadOnlyRespository()
+        {
+            var tickRepository = new Mock<IReadOnlyRespository<Tick>>();
+            var testData = ticks.Where(x => x.Symbol == "IBM");
+            tickRepository.Setup(a => a.GetBy(x => x.Symbol == "IBM")).Returns(testData);
 
+            Assert.AreEqual(tickRepository.Object.GetBy(x => x.Symbol == "IBM"), testData);
+            tickRepository.Verify(x => x.GetBy(i => i.Symbol == "IBM"), Times.Once);
+        }
+
+        [Test]
+        public void GetTick_NullData()
+        {
+            var tickRepository = new Mock<IReadOnlyRespository<Tick>>();
+            tickRepository.Setup(a => a.Get());
+
+            Tick testData = null;
+            Assert.AreEqual(tickRepository.Object.Get(), testData);
+            tickRepository.Verify(x => x.Get(), Times.Once);
+        }
+
+        [Test]
+        public void GetAllTicks_NullData()
+        {
+            var tickRepository = new Mock<IReadOnlyRespository<Tick>>();
+            tickRepository.Setup(a => a.GetAll());
+
+            IEnumerable<Tick> testData = null;
+            Assert.AreEqual(tickRepository.Object.GetAll(), testData);
+            tickRepository.Verify(x => x.GetAll(), Times.Once);
+        }
+
+        [Test]
+        public void GetTick_ByMember_FromReadOnlyRespository_NullData()
+        {
+            var tickRepository = new Mock<IReadOnlyRespository<Tick>>();
+            IEnumerable<Tick> testData = null;
+            tickRepository.Setup(a => a.GetBy(x => x.Symbol == "IBM")).Returns(testData);
+
+            Assert.AreEqual(tickRepository.Object.GetBy(x => x.Symbol == "IBM"), testData);
+            tickRepository.Verify(x => x.GetBy(i => i.Symbol == "IBM"), Times.Once);
+        }
+
+        /// <summary>
+        /// Test tick data.
+        /// </summary>
         private static readonly Tick[] ticks =
         {
             new Tick(new Guid("E5CB576D-BD03-4090-B49C-00000F8ED76E"), "IBM", DateTime.Parse("2013-08-05 00:00:00.000"),
@@ -90,5 +138,7 @@ namespace Test
             new Tick(new Guid("F1336A10-62FA-45A5-8F59-000057419918"), "IBM", DateTime.Parse("2001-02-21 00:00:00.000"),
                 DateTime.Parse("13:48:00.0000000"), 92.84M, 32.45M, 92.91M, 23170)
         };
+
+
     }
 }
