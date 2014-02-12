@@ -55,6 +55,7 @@
   <ItemGroup>
     <Compile Include="Core\AutoMapperTests.cs" />
     <Compile Include="Core\TickRepositoryUnitTests.cs" />
+    <Compile Include="Core\UtilityTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
