@@ -1,5 +1,4 @@
-﻿
-namespace TradingCore.DTO
+﻿namespace TradingCore.DTO.Interface
 {
     public interface IDTO
     {

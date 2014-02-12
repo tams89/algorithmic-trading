@@ -1,4 +1,5 @@
 ﻿using System;
+using TradingCore.DTO.Interface;
 
 namespace TradingCore.DTO
 {

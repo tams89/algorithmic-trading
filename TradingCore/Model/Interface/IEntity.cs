@@ -1,6 +1,4 @@
-﻿
-
-namespace TradingCore.Model
+﻿namespace TradingCore.Model.Interface
 {
     public interface IEntity
     {

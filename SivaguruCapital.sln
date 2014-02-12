@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradingCore", "TradingCore\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{5CCB2B52-8891-4D4B-989A-CADE03A1866E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ORM", "ORM\ORM.csproj", "{AACCA099-B117-4165-A0D3-0B68B1A85BDF}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,10 +21,6 @@ Global
 		{5CCB2B52-8891-4D4B-989A-CADE03A1866E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5CCB2B52-8891-4D4B-989A-CADE03A1866E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5CCB2B52-8891-4D4B-989A-CADE03A1866E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AACCA099-B117-4165-A0D3-0B68B1A85BDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AACCA099-B117-4165-A0D3-0B68B1A85BDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AACCA099-B117-4165-A0D3-0B68B1A85BDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AACCA099-B117-4165-A0D3-0B68B1A85BDF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
