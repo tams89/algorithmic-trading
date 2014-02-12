@@ -53,16 +53,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AutoMapper\AutoMapperConfig.cs" />
+    <Compile Include="DTO\HistoricalStockDTO.cs" />
     <Compile Include="DTO\Interface\IDTO.cs" />
     <Compile Include="DTO\TickDTO.cs" />
+    <Compile Include="Model\HistoricalStock.cs" />
     <Compile Include="Model\Interface\IEntity.cs" />
     <Compile Include="Model\Tick.cs" />
+    <Compile Include="ORM\Dapper\Mapping\HistoricalStockMap.cs" />
     <Compile Include="ORM\Dapper\Mapping\TickMap.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repository\Interface\IReadOnlyRespository.cs" />
     <Compile Include="Repository\Interface\IRepository.cs" />
     <Compile Include="Repository\Repository.cs" />
     <Compile Include="Utilities\Configuration.cs" />
+    <Compile Include="Utilities\ExpressionHelpers.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Factory\" />

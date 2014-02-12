@@ -1,7 +1,7 @@
 ﻿using NUnit.Framework;
 using TradingCore.AutoMapper;
 
-namespace Test.Core
+namespace Test.UnitTest.Core
 {
     [TestFixture]
     public class AutoMapperTests
