@@ -38,13 +38,12 @@ module AlgoStockTrader =
  
  let handle_tick = 
   
-  let period = 5 // vwap calculation number of days
+  let period = 5.0 // vwap calculation number of days for period
 
   /// Volume Weighted Average Price
   let vwap (prices: Tick list) = 
    prices 
-   |> List.filter (fun x -> x.Date.AddDays(-period) || x.Date.AddDays(+period)) // get data within period
+   |> List.filter (fun x -> x.Date = x.Date.AddDays(-period) || x.Date = x.Date.AddDays(+period)) // get data within period
    |> List.map (fun x -> (x.Close * x.Volume) / (x.Volume))
 
-   
-
+  printfn "Frame intercepted and processed"

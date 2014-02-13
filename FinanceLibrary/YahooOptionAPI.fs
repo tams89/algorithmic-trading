@@ -11,7 +11,7 @@ module YahooOptionAPI =
  open System.Text.RegularExpressions
  open Microsoft.FSharp.Collections
  
- let makeUrlOptions ticker =
+ let private makeUrlOptions ticker =
      new Uri("http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.options%20where%20symbol%20in%20('" 
       + ticker + "')&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys")
  
@@ -30,23 +30,23 @@ module YahooOptionAPI =
     InTheMoney:bool; 
     AtTheMoney:bool }
  
- let xn s = XName.Get(s)
- let (?) (el:XElement) name = el.Element(xn name).Value
+ let private xn s = XName.Get(s)
+ let private (?) (el:XElement) name = el.Element(xn name).Value
 
  /// Converts a string to a decimal.
- let cd value =
+ let private cd value =
   match Decimal.TryParse(value) with
   | (false, _) -> 0M
   | (true, n) -> n
 
  /// Converts a string to an integer.
- let ci value =
+ let private ci value =
   match Int32.TryParse(value) with
   | (false, _) -> 0
   | (true, n) -> n
  
  /// Calculates expiry date by whether option is mini-option or ordinary.
- let expiryDate (optionTicker:string) =
+ let private expiryDate (optionTicker:string) =
      let symbolLength = Regex.Match(optionTicker, @"[^[0-9]*]*").Value.Length // selects symbol from the option ticker.
      if optionTicker.Substring(4,1) = "7" then // mini-option ticker.
         DateTime.ParseExact(String.Format("{0}/{1}/{2}", optionTicker.Substring(8 + 1, 2), optionTicker.Substring(6 + 1, 2), optionTicker.Substring(4 + 1, 2)), "dd/MM/yy", CultureInfo.InvariantCulture)
@@ -61,10 +61,10 @@ module YahooOptionAPI =
      else // unknown option ticker type.
          failwith "Invalid expiry date parsing operation..."
  
- let daysToExpiry (expiryDate:DateTime) : string = 
+ let private daysToExpiry (expiryDate:DateTime) : string = 
      (expiryDate - DateTime.Today).TotalDays |> string
  
- let inTheMoney symbol strikePrice marketPrice =    
+ let private inTheMoney symbol strikePrice marketPrice =    
      // Call option is in the money when the strike price is below the market price.
      if symbol.ToString().[10] = 'C' then strikePrice < marketPrice
      // Put option is in the money when the strike price is above the market price.
@@ -72,12 +72,12 @@ module YahooOptionAPI =
      else false;
  
  /// Call or Put option is at the money when the strike price is equal to the market price.
- let atTheMoney strikePrice marketPrice =    
+ let private atTheMoney strikePrice marketPrice =    
      if strikePrice = marketPrice then true
      else false
  
  /// Gets SOAP data and deserialises into optionsData type.
- let downloadOptionsFeed (url:Uri) =
+ let private downloadOptionsFeed (url:Uri) =
    let req = HttpWebRequest.Create(url)
    use resp = req.GetResponse()
    use stream = resp.GetResponseStream()
@@ -85,7 +85,7 @@ module YahooOptionAPI =
    let result = reader.ReadToEnd()
    result
 
- let serializeSoapData read = 
+ let private serializeSoapData read = 
   let feed = XDocument.Parse(read)
   let elementToOptionData (e: XElement) =
    {
