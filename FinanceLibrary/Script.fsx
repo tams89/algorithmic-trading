@@ -8,7 +8,6 @@ open FinanceLibrary
 open YahooFinance.Option.YahooOptionAPI
 open Microsoft.FSharp.Collections
 
-
 // Define your library scripting code here
 
 #time "on"                

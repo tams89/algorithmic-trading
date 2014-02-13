@@ -49,20 +49,15 @@ module YahooOptionAPI =
  let expiryDate (optionTicker:string) =
      let symbolLength = Regex.Match(optionTicker, @"[^[0-9]*]*").Value.Length // selects symbol from the option ticker.
      if optionTicker.Substring(4,1) = "7" then // mini-option ticker.
-        DateTime.ParseExact(String.Format("{0}/{1}/{2}", optionTicker
-         .Substring(8 + 1, 2), optionTicker.Substring(6 + 1, 2), optionTicker.Substring(4 + 1, 2)), "dd/MM/yy", CultureInfo.InvariantCulture)
+        DateTime.ParseExact(String.Format("{0}/{1}/{2}", optionTicker.Substring(8 + 1, 2), optionTicker.Substring(6 + 1, 2), optionTicker.Substring(4 + 1, 2)), "dd/MM/yy", CultureInfo.InvariantCulture)
      elif symbolLength = 4 then // standard 4 char symbol
-        DateTime.ParseExact(String.Format("{0}/{1}/{2}", optionTicker
-         .Substring(8, 2), optionTicker.Substring(6, 2), optionTicker.Substring(4, 2)), "dd/MM/yy", CultureInfo.InvariantCulture)
+        DateTime.ParseExact(String.Format("{0}/{1}/{2}", optionTicker.Substring(8, 2), optionTicker.Substring(6, 2), optionTicker.Substring(4, 2)), "dd/MM/yy", CultureInfo.InvariantCulture)
      elif symbolLength = 3 then // 3 char symbol
-        DateTime.ParseExact(String.Format("{0}/{1}/{2}", optionTicker
-         .Substring(8 - 1, 2), optionTicker.Substring(6 - 1, 2), optionTicker.Substring(4 - 1, 2)), "dd/MM/yy", CultureInfo.InvariantCulture) 
+        DateTime.ParseExact(String.Format("{0}/{1}/{2}", optionTicker.Substring(8 - 1, 2), optionTicker.Substring(6 - 1, 2), optionTicker.Substring(4 - 1, 2)), "dd/MM/yy", CultureInfo.InvariantCulture) 
      elif symbolLength = 2 then // 2 char symbol
-        DateTime.ParseExact(String.Format("{0}/{1}/{2}", optionTicker
-         .Substring(8 - 2, 2), optionTicker.Substring(6 - 2, 2), optionTicker.Substring(4 - 2, 2)), "dd/MM/yy", CultureInfo.InvariantCulture) 
+        DateTime.ParseExact(String.Format("{0}/{1}/{2}", optionTicker.Substring(8 - 2, 2), optionTicker.Substring(6 - 2, 2), optionTicker.Substring(4 - 2, 2)), "dd/MM/yy", CultureInfo.InvariantCulture) 
      elif symbolLength = 1 then // 1 char symbol
-        DateTime.ParseExact(String.Format("{0}/{1}/{2}", optionTicker
-         .Substring(8 - 3, 2), optionTicker.Substring(6 - 3, 2), optionTicker.Substring(4 - 3, 2)), "dd/MM/yy", CultureInfo.InvariantCulture) 
+        DateTime.ParseExact(String.Format("{0}/{1}/{2}", optionTicker.Substring(8 - 3, 2), optionTicker.Substring(6 - 3, 2), optionTicker.Substring(4 - 3, 2)), "dd/MM/yy", CultureInfo.InvariantCulture) 
      else // unknown option ticker type.
          failwith "Invalid expiry date parsing operation..."
  
