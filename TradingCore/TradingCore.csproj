@@ -58,6 +58,7 @@
     <Compile Include="DTO\HistoricalStockDTO.cs" />
     <Compile Include="DTO\Interface\IDTO.cs" />
     <Compile Include="DTO\TickDTO.cs" />
+    <Compile Include="IBImpl\IBClient.cs" />
     <Compile Include="Model\HistoricalStock.cs" />
     <Compile Include="Model\Interface\IEntity.cs" />
     <Compile Include="Model\Tick.cs" />
@@ -77,6 +78,12 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\InteractiveBrokersAPI\InteractiveBrokersAPI.csproj">
+      <Project>{8ede0744-96c2-40b0-a8dc-37df79370203}</Project>
+      <Name>InteractiveBrokersAPI</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
