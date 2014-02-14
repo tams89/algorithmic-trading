@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Test.UnitTest.IBImpl
 {
-    public class OrderSamples0
+    public class OrderSamples
     {
         public static Order LimitOrder()
         {

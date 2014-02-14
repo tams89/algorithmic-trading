@@ -56,10 +56,11 @@
     <Compile Include="AlgoStockTrader.fs" />
     <Compile Include="YahooOptionAPI.fs" />
     <Compile Include="YahooAPIStockChart.fs" />
-    <None Include="Script.fsx" />
+    <None Include="YahooOptions.fsx" />
     <None Include="packages.config" />
     <None Include="app.config" />
     <None Include="FSharp.Charting.fsx" />
+    <None Include="Charting.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Charting">
@@ -72,6 +73,10 @@
     </Reference>
     <Reference Include="FSharp.Data.DesignTime">
       <HintPath>..\packages\FSharp.Data.1.1.10\lib\net40\FSharp.Data.DesignTime.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="FSharp.Data.Experimental.XenomorphProvider">
+      <HintPath>..\packages\FSharp.Data.Experimental.XenomorphProvider.0.0.5\lib\net40\FSharp.Data.Experimental.XenomorphProvider.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="FSharp.PowerPack">
@@ -96,6 +101,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Net" />
     <Reference Include="System.Numerics" />

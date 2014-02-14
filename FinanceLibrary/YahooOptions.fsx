@@ -1,6 +1,5 @@
 ﻿// Learn more about F# at http://fsharp.net. See the 'F# Tutorial' ProjectionParameterAttribute
 // for more guidance on F# programming.
-
 #r "System.Xml.Linq"
 #load "YahooOptionAPI.fs"
 

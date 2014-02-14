@@ -10,7 +10,7 @@ namespace Test.UnitTest.IBImpl
 {
     public class RequestContractDetails : IBClient
     {
-        private bool isFinished = false;
+        private bool isFinished;
 
         public bool IsFinished
         {

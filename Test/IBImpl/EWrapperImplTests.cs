@@ -218,7 +218,6 @@ namespace Test.UnitTest.IBImpl
             //wrapper.ClientSocket.unsubscribeFromGroupEvents(124);
         }
 
-
         private static List<TagValue> GetFakeParameters(int numParams)
         {
             var fakeParams = new List<TagValue>();

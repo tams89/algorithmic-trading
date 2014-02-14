@@ -3,6 +3,7 @@ using System;
 
 namespace TradingCore.IBImpl
 {
+    // TODO: Implementation needs testing with a demo or paper account.
     /// <summary>
     /// Implements the interface to the Interactive Brokers API.
     /// </summary>

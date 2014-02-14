@@ -60,7 +60,7 @@
     <Compile Include="Core\UtilityTests.cs" />
     <Compile Include="IBImpl\ContractSamples.cs" />
     <Compile Include="IBImpl\EWrapperImplTests.cs" />
-    <Compile Include="IBImpl\OrderSamples0.cs" />
+    <Compile Include="IBImpl\OrderSamples.cs" />
     <Compile Include="IBImpl\RequestContractDetails.cs" />
     <Compile Include="IBImpl\ScannerSubscriptionSamples.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
