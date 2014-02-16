@@ -57,13 +57,14 @@ module AlgoStockTrader =
  end
 
  type Trader (portfolio:Portfolio, symbol:string) = class
-  
-  let symbol = symbol
+
+  // Get historical stock prices for the symbol
+  let prices = getStockPrices symbol 60
 
   // Limit the exposure on open positions.
   let limit = portfolio.Cash * 0.8M
 
-  /// Calculated using mean high low close.
+  // Calculated using mean high low close.
   let volumeWeightedAvgPrice (prices:Tick[]) (period:float) = 
     let ticksInPeriod =
      prices 
@@ -71,25 +72,24 @@ module AlgoStockTrader =
     (ticksInPeriod |> Array.sumBy (fun x-> ((x.High + x.Low + x.Close)/3.0M) * x.Volume)) // Sum price times volume per trade
      / (ticksInPeriod |> Array.sumBy (fun x -> x.Volume)) // Sum volume over whole period
 
-  // Place order / make trade
+  /// Place order / make trade
   member x.PlaceOrder(value) =
     portfolio.Positions.Add(value)
     printfn "Order placed: %A" value
-
+  
+  /// Call on incoming data
   member x.IncomingTick(tick:Tick) = 
    // TODO Trading logic meat in here
    let currentPrice = tick.Close
    
-//   let historicalPrices = FinanceLibrary.
-//   let calcVwap = x.VolumeWeightedAvgPrice()
-   let calcVwap = 
-    let prices = getStockPrices symbol 5
-    let vwap = volumeWeightedAvgPrice prices 3.0
-    vwap
+   let calcVwap = volumeWeightedAvgPrice prices 3.0
 
    // if the stocks price less than the vwap by 0.5% and max 
    // the limit has not been exceeded.
    if tick.Close < (calcVwap * 0.995M) && (portfolio.PositionsValue - limit > 0.0M) then
     x.PlaceOrder(symbol,-100M)
+   // if the stock price has increased by 0.1% to the vwap and we havent reached exposure limit then buy.
+   elif tick.Close > calcVwap * 1.001M && (portfolio.PositionsValue - limit > 0.0M) then
+    x.PlaceOrder(symbol,+100M)
 
  end
