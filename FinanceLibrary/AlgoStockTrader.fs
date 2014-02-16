@@ -48,7 +48,9 @@ module AlgoStockTrader =
                     AdjClose = decimal infos.[6] } }
    |> Seq.take count |> Array.ofSeq |> Array.rev
 
+
  type OrderType = Long | Short
+
 
  type Order = 
   { Symbol:string
@@ -56,8 +58,8 @@ module AlgoStockTrader =
     OrderType:OrderType
     Value:decimal }
 
+
  type Portfolio(startingCash:decimal, startDate:DateTime) = class
-  
   let mutable positions = new System.Collections.Generic.List<Order>()
   let mutable currentPrice = 0M
 
@@ -74,7 +76,7 @@ module AlgoStockTrader =
   /// Current amount of available cash.
   /// Sum of starting capital minus the positions as they were ordered (not the current value of the positions).
   member x.Cash
-   with get() = startingCash - (positions |> Seq.sumBy (fun y -> y.Value))
+   with get() = (positions |> Seq.sumBy (fun y -> y.Value)) - startingCash
   
   /// Total profit and loss up until the current time.
   member x.ProfitAndLoss
@@ -98,16 +100,16 @@ module AlgoStockTrader =
 
   member x.AddPosition(order) = positions.Add(order)
 //  member x.ClosePosition(value) = positions.Remove(value)
-
  end
 
- type Trader (portfolio:Portfolio, symbol:string) = class
+
+ type Trader (portfolio:Portfolio, symbol:string, backTestPeriod) = class
 
   // Get historical stock prices for the symbol
-  let prices = getStockPrices symbol 600
+  let prices = getStockPrices symbol backTestPeriod
 
   // Limit the exposure on open positions.
-  let limit = portfolio.Cash
+  let limit = 1000000M
 
   // Calculated using mean high low close.
   let volumeWeightedAvgPrice (prices:Tick[]) (period:float) = 
@@ -118,23 +120,21 @@ module AlgoStockTrader =
      / (ticksInPeriod |> Array.sumBy (fun x -> x.Volume)) // Sum volume over whole period
 
   /// Place order / make trade
-  member private x.PlaceOrder(order:Order) =
-    let placed = portfolio.AddPosition(order)
-    printfn "Order placed: %A, successful: %A" order placed
+  member private x.PlaceOrder(order:Order) = portfolio.AddPosition(order)
   
   /// Call on incoming data
   member private x.IncomingTick(tick:Tick) = 
    // TODO Trading logic meat in here
-   let currentPrice = tick.Close
+   let currentPrice = tick.Low
    let calcVwap = volumeWeightedAvgPrice prices 3.0
 
    // if the stocks price less than the vwap by 0.5% and the limit has not been exceeded.
-   if tick.Close < (calcVwap * 0.995M) && (portfolio.PositionsValue > -limit) then
-    let order : Order = { Symbol = symbol; Quantity = -100; OrderType = Short; Value =  100M * tick.Close }
+   if currentPrice < (calcVwap * 0.995M) && (portfolio.PositionsValue > -limit) then
+    let order = { Symbol = symbol; Quantity = -100; OrderType = Short; Value =  100M * currentPrice }
     x.PlaceOrder(order)
    // if the stock price has increased by 0.1% to the vwap and we havent reached exposure limit then buy.
-   elif tick.Close > calcVwap * 1.001M && (portfolio.PositionsValue < +limit) then
-    let order : Order = { Symbol = symbol; Quantity = +100; OrderType = Long; Value =  100M * tick.Close }
+   elif currentPrice > calcVwap * 1.001M && (portfolio.PositionsValue < +limit) then
+    let order = { Symbol = symbol; Quantity = +100; OrderType = Long; Value =  100M * currentPrice }
     x.PlaceOrder(order)
 
   member x.BackTest () = 
@@ -144,9 +144,12 @@ module AlgoStockTrader =
     portfolio.CurrentPrice <- prices.[prices.Length-1].Close // Assign most recent price for position end value calculations.
    printfn "Algorithm Ended."
 
+  /// Default constructor for GOOG 600
+  new (portfolio:Portfolio) = Trader(portfolio, "GOOG", 600) 
  end
+
 
  let system = 
   let p = new Portfolio(1000000M, DateTime.Today)
-  let trader = new Trader(p, "MSFT")
+  let trader = new Trader(p)
   trader.BackTest()
