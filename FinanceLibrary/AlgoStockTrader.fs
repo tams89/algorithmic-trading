@@ -59,11 +59,14 @@ module AlgoStockTrader =
  type Portfolio(startingCash:decimal, startDate:DateTime) = class
   
   let mutable positions = new System.Collections.Generic.List<Order>()
-  let mutable positionsValue = 0.0M
   let mutable currentPrice = 0M
+  let mutable profitAndLoss = 0M
 
-  member x.StartDate = startDate /// The starting date of the portfolio.
-  member x.StartingCash = startingCash /// Starting capital.
+  /// The starting date of the portfolio.
+  member x.StartDate = startDate
+
+  /// Starting capital.
+  member x.StartingCash = startingCash 
 
   member x.CurrentPrice
    with get() = currentPrice
@@ -75,7 +78,7 @@ module AlgoStockTrader =
   
   /// Total profit and loss up until the current time.
   member x.ProfitAndLoss
-   with get() = x.Cash + x.PositionsValue - startingCash
+   with get() = profitAndLoss <- x.Cash + x.PositionsValue - startingCash
   
   /// Dictionary of open positions (i.e. Stock GOOG 124).
   member x.Positions
@@ -84,7 +87,7 @@ module AlgoStockTrader =
   /// Total value of the open positions.
   /// TODO: This changes with every tick and so must be recalculated using most recent tick price.
   member x.PositionsValue
-   with get() = x.Positions |> Seq.filter (fun y -> y.Value = 0M) |> Seq.sumBy (fun y -> y.Value)
+   with get() = decimal(positions |> Seq.sumBy (fun y -> y.Value)) - (decimal(positions |> Seq.sumBy (fun y -> y.Quantity)) * currentPrice)
 
   /// Sum of positionsValue and cash.
   member x.PortfolioValue 
@@ -92,10 +95,10 @@ module AlgoStockTrader =
 
   /// Cumulative percentage returns for entire portfolio up until now. Pentage gain or loss of start cash.
   member x.Returns
-   with get() = x.ProfitAndLoss / startingCash
+   with get() = profitAndLoss / startingCash
 
   member x.AddPosition(order) = positions.Add(order)
-  member x.ClosePosition(value) = positions.Remove(value)
+//  member x.ClosePosition(value) = positions.Remove(value)
 
  end
 
@@ -138,6 +141,7 @@ module AlgoStockTrader =
    printfn "Algorithm Started."
    for tick in prices do 
     x.IncomingTick(tick)
+   portfolio.CurrentPrice <- prices.[prices.Length-1].Close // Assign most recent price for position end value calculations.
    printfn "Total Long: %A" (portfolio.Positions |> Seq.filter (fun y -> y.OrderType = Long) |> Seq.sumBy (fun u -> u.Value))
    printfn "Total Short: %A" (portfolio.Positions |> Seq.filter (fun y -> y.OrderType = Short) |> Seq.sumBy (fun u -> u.Value))
    printfn "Algorithm Ended."
