@@ -13,7 +13,40 @@
 module AlgoStockTrader = 
 
  open System
- open FinanceLibrary.YahooAPIStockChart
+ open System.Net
+
+ let url = "http://ichart.finance.yahoo.com/table.csv?s="
+
+ type Tick = 
+  { Date:DateTime
+    Open:decimal
+    High:decimal
+    Low:decimal
+    Close:decimal
+    Volume:decimal
+    AdjClose:decimal }
+ 
+ /// Returns prices (as tuple) of a given stock for a 
+ /// specified number of days (starting from the most recent)
+ let getStockPrices stock count =
+  // Download the data and split it into lines
+  let wc = new WebClient()
+  let data = wc.DownloadString(url + stock)
+  let dataLines = 
+      data.Split([| '\n' |], StringSplitOptions.RemoveEmptyEntries) 
+ 
+  // Parse lines of the CSV file and take specified
+  // number of days using in the oldest to newest order
+  seq { for line in dataLines |> Seq.skip 1 do
+            let infos = line.Split(',')
+            yield { Date = DateTime.Parse infos.[0]
+                    Open = decimal infos.[1]
+                    High = decimal infos.[2]
+                    Low = decimal infos.[3]
+                    Close = decimal infos.[4]
+                    Volume = decimal infos.[5]
+                    AdjClose = decimal infos.[6] } }
+   |> Seq.take count |> Array.ofSeq |> Array.rev
 
  type OrderType = Long | Short
 
@@ -23,7 +56,7 @@ module AlgoStockTrader =
     OrderType:OrderType
     Value:decimal }
 
- type Portfolio(startingCash, startDate) = class
+ type Portfolio(startingCash:decimal, startDate:DateTime) = class
   let mutable cash = 0M 
   let mutable profitAndLoss = 0M 
   let mutable positions = new System.Collections.Generic.HashSet<Order>() 
@@ -81,12 +114,12 @@ module AlgoStockTrader =
      / (ticksInPeriod |> Array.sumBy (fun x -> x.Volume)) // Sum volume over whole period
 
   /// Place order / make trade
-  member x.PlaceOrder(order:Order) =
+  member private x.PlaceOrder(order:Order) =
     let placed = portfolio.AddPosition(order)
     printfn "Order placed: %A, successful: %A" order placed
   
   /// Call on incoming data
-  member x.IncomingTick(tick:Tick) = 
+  member private x.IncomingTick(tick:Tick) = 
    // TODO Trading logic meat in here
    let currentPrice = tick.Close
    
@@ -101,4 +134,15 @@ module AlgoStockTrader =
     let order : Order = { Symbol = symbol; Quantity = +100; OrderType = Long; Value =  100M * tick.Close }
     x.PlaceOrder(order)
 
+  member x.BackTest = 
+   printfn "Algorithm Started."
+   for tick in prices do 
+    x.IncomingTick(tick)
+   printfn "Algorithm Ended."
+
  end
+
+ let system = 
+  let p = new Portfolio(1000000M, DateTime.Today)
+  let trader = new Trader(p, "GOOG")
+  trader.BackTest
