@@ -2,11 +2,9 @@
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Text;
 using System.Threading;
-using System.Net.Sockets;
-using System.IO;
 
 namespace IBApi
 {
@@ -17,7 +15,7 @@ namespace IBApi
 
         private ManualResetEvent stopEvent;
         private Thread runner;
-        
+
         public EReader(EClientSocket parent, BinaryReader reader)
         {
             this.parent = parent;
@@ -36,12 +34,12 @@ namespace IBApi
             this.runner.Abort();
         }
 
-       
+
         public void ReadAndProcessMessages()
         {
             try
             {
-                while(!stopEvent.WaitOne(0))
+                while (!stopEvent.WaitOne(0))
                 {
                     int incomingMessage = ReadInt();
                     ProcessIncomingMessage(incomingMessage);
@@ -55,12 +53,12 @@ namespace IBApi
                     parent.Wrapper.error(e);
                 }
             }
-            if(parent.IsConnected())
+            if (parent.IsConnected())
             {
                 tcpReader.Close();
                 parent.Close();
             }
-          
+
         }
 
 
@@ -1268,7 +1266,7 @@ namespace IBApi
                                         close, volume, barCount, WAP,
                                         Boolean.Parse(hasGaps));
             }
-            
+
             // send end of dataset marker.
             parent.Wrapper.historicalDataEnd(requestId, startDateStr, endDateStr);
         }
@@ -1420,7 +1418,7 @@ namespace IBApi
             string apiData = ReadString();
             parent.Wrapper.verifyMessageAPI(apiData);
         }
-                
+
         public void VerifyCompletedEvent()
         {
             int msgVersion = ReadInt();
@@ -1429,7 +1427,7 @@ namespace IBApi
             string errorText = ReadString();
             parent.Wrapper.verifyCompleted(isSuccessful, errorText);
         }
-                     
+
         public void DisplayGroupListEvent()
         {
             int msgVersion = ReadInt();
@@ -1437,7 +1435,7 @@ namespace IBApi
             string groups = ReadString();
             parent.Wrapper.displayGroupList(requestId, groups);
         }
-                   
+
         public void DisplayGroupUpdatedEvent()
         {
             int msgVersion = ReadInt();
@@ -1463,10 +1461,10 @@ namespace IBApi
             else return Double.Parse(doubleAsstring, System.Globalization.NumberFormatInfo.InvariantInfo);
         }
 
-        protected double ReadDoubleMax() 
+        protected double ReadDoubleMax()
         {
             string str = ReadString();
-            return (str == null || str.Length == 0) ? Double.MaxValue : Double.Parse(str, System.Globalization.NumberFormatInfo.InvariantInfo);
+            return string.IsNullOrEmpty(str) ? Double.MaxValue : Double.Parse(str, System.Globalization.NumberFormatInfo.InvariantInfo);
         }
 
         public long ReadLong()
@@ -1491,43 +1489,39 @@ namespace IBApi
             else return Int32.Parse(intAsstring);
         }
 
-        protected int ReadIntMax() 
+        protected int ReadIntMax()
         {
             string str = ReadString();
-            return (str == null || str.Length == 0) ? Int32.MaxValue : Int32.Parse(str);
+            return string.IsNullOrEmpty(str) ? Int32.MaxValue : Int32.Parse(str);
         }
 
-        protected bool ReadBoolFromInt() {
-            string str = ReadString();
-            return str == null ? false : (Int32.Parse(str) != 0);
+        protected bool ReadBoolFromInt()
+        {
+            var str = ReadString();
+            return str != null && (Int32.Parse(str) != 0);
         }
 
         public string ReadString()
         {
-            byte b = tcpReader.ReadByte();
+            var b = tcpReader.ReadByte();
             if (b == 0)
             {
                 return null;
             }
-            else
+
+            var strBuilder = new StringBuilder();
+            strBuilder.Append((char)b);
+            while (true)
             {
-                StringBuilder strBuilder = new StringBuilder();
-                strBuilder.Append((char)b);
-                while (true)
+                b = tcpReader.ReadByte();
+                if (b == 0)
                 {
-                    b = tcpReader.ReadByte();                    
-                    if (b == 0)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        strBuilder.Append((char)b);
-                    }
+                    break;
                 }
-                //Console.WriteLine("Last value being read: "+strBuilder.ToString());
-                return strBuilder.ToString();
+                strBuilder.Append((char)b);
             }
+            //Console.WriteLine("Last value being read: "+strBuilder.ToString());
+            return strBuilder.ToString();
         }
     }
 }

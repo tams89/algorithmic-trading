@@ -14,17 +14,47 @@ module AlgoStockTrader =
 
  open System
 
- type Portfolio =
-  {  CapitalUsed:decimal
-     Cash:decimal
-     ProfitAndLoss:decimal
-     Positions:decimal
-     PositionsValue:decimal
-     Returns:decimal
-     StartingCash:decimal
-     StartDate:DateTime
-  }
- 
+ type Portfolio(startingCash, startDate) = class
+  let mutable cash = 0M 
+  let mutable profitAndLoss = 0M 
+  let mutable positions = new System.Collections.Generic.Dictionary<string, decimal>() 
+  let mutable positionsValue = new System.Collections.Generic.Dictionary<string, decimal>() 
+  let mutable portfolioValue = 0M 
+  let mutable returns = 0M 
+
+  member x.StartDate = startDate /// The starting date of the portfolio.
+  member x.StartingCash = startingCash /// The date this portfolio was created.
+
+  /// Current amount of available cash.
+  member x.Cash
+   with get() = cash
+   and set(value) = cash <- value
+  
+  /// Total profit and loss up until the current time.
+  member x.ProfitAndLoss
+   with get() = profitAndLoss <- (cash + (positionsValue.Values |> Seq.sum)) - startingCash
+  
+  /// Dictionary of open positions (i.e. Stock GOOG 124).
+  member x.Positions
+   with get() = positions
+
+  /// Total value of the open positions.
+  member x.PositionsValue
+   with get() = positionsValue
+
+  /// Sum of positionsValue and cash.
+  member x.PortfolioValue 
+   with get() = portfolioValue <- cash + (positionsValue.Values |> Seq.sum)
+
+  /// Cumulative percentage returns for entire portfolio up until now. Pentage gain or loss of start cash.
+  member x.Returns
+   with get() = returns <- profitAndLoss / startingCash
+
+  member x.AddPosition(value) = positions.Add(value)
+  member x.RemovePosition(value) = positions.Remove(value)
+
+ end
+
  type Tick = 
   { Symbol:string
     Date:DateTime
@@ -35,7 +65,8 @@ module AlgoStockTrader =
     Close:decimal
     Volume:decimal }
  
- let handle_tick = 
+ /// Executed when a new price comes in.
+ let incomingTick tick portfolio = 
   
   let period = 5.0 // vwap calculation number of days for period
 
