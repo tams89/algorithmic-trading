@@ -15,11 +15,19 @@ module AlgoStockTrader =
  open System
  open FinanceLibrary.YahooAPIStockChart
 
+ type OrderType = Long | Short
+
+ type Order = 
+  { Symbol:string
+    Quantity:int
+    OrderType:OrderType
+    Value:decimal }
+
  type Portfolio(startingCash, startDate) = class
   let mutable cash = 0M 
   let mutable profitAndLoss = 0M 
-  let mutable positions = new System.Collections.Generic.Dictionary<string, decimal>() 
-  let mutable positionsValue = new System.Collections.Generic.Dictionary<string, decimal>() 
+  let mutable positions = new System.Collections.Generic.HashSet<Order>() 
+  let mutable positionsValue = new System.Collections.Generic.Dictionary<string,decimal>() 
   let mutable portfolioValue = 0M 
   let mutable returns = 0M 
 
@@ -73,9 +81,9 @@ module AlgoStockTrader =
      / (ticksInPeriod |> Array.sumBy (fun x -> x.Volume)) // Sum volume over whole period
 
   /// Place order / make trade
-  member x.PlaceOrder(value) =
-    portfolio.Positions.Add(value)
-    printfn "Order placed: %A" value
+  member x.PlaceOrder(order:Order) =
+    let placed = portfolio.AddPosition(order)
+    printfn "Order placed: %A, successful: %A" order placed
   
   /// Call on incoming data
   member x.IncomingTick(tick:Tick) = 
@@ -84,12 +92,13 @@ module AlgoStockTrader =
    
    let calcVwap = volumeWeightedAvgPrice prices 3.0
 
-   // if the stocks price less than the vwap by 0.5% and max 
-   // the limit has not been exceeded.
+   // if the stocks price less than the vwap by 0.5% and the limit has not been exceeded.
    if tick.Close < (calcVwap * 0.995M) && (portfolio.PositionsValue - limit > 0.0M) then
-    x.PlaceOrder(symbol,-100M)
+    let order : Order = { Symbol = symbol; Quantity = -100; OrderType = Short; Value =  100M * tick.Close }
+    x.PlaceOrder(order)
    // if the stock price has increased by 0.1% to the vwap and we havent reached exposure limit then buy.
    elif tick.Close > calcVwap * 1.001M && (portfolio.PositionsValue - limit > 0.0M) then
-    x.PlaceOrder(symbol,+100M)
+    let order : Order = { Symbol = symbol; Quantity = +100; OrderType = Long; Value =  100M * tick.Close }
+    x.PlaceOrder(order)
 
  end
