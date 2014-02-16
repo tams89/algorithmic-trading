@@ -53,9 +53,9 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
-    <Compile Include="AlgoStockTrader.fs" />
     <Compile Include="YahooOptionAPI.fs" />
     <Compile Include="YahooAPIStockChart.fs" />
+    <Compile Include="AlgoStockTrader.fs" />
     <None Include="YahooOptions.fsx" />
     <None Include="packages.config" />
     <None Include="app.config" />

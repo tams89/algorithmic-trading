@@ -13,6 +13,7 @@
 module AlgoStockTrader = 
 
  open System
+ open FinanceLibrary.YahooAPIStockChart
 
  type Portfolio(startingCash, startDate) = class
   let mutable cash = 0M 
@@ -40,7 +41,7 @@ module AlgoStockTrader =
 
   /// Total value of the open positions.
   member x.PositionsValue
-   with get() = positionsValue
+   with get() = positionsValue.Values |> Seq.sum
 
   /// Sum of positionsValue and cash.
   member x.PortfolioValue 
@@ -55,28 +56,40 @@ module AlgoStockTrader =
 
  end
 
- type Tick = 
-  { Symbol:string
-    Date:DateTime
-    Time:TimeSpan
-    Open:decimal
-    High:decimal
-    Low:decimal
-    Close:decimal
-    Volume:decimal }
- 
- /// Executed when a new price comes in.
- let incomingTick tick portfolio = 
+ type Trader (portfolio:Portfolio, symbol:string) = class
   
-  let period = 5.0 // vwap calculation number of days for period
+  let symbol = symbol
 
-  /// Volume Weighted Average Price
+  // Limit the exposure on open positions.
+  let limit = portfolio.Cash * 0.8M
+
   /// Calculated using mean high low close.
-  let vwap (prices: Tick []) period = 
+  let volumeWeightedAvgPrice (prices:Tick[]) (period:float) = 
     let ticksInPeriod =
      prices 
      |> Array.filter (fun x -> x.Date <= DateTime.Today.AddDays(-period) || x.Date >= DateTime.Today.AddDays(+period)) // get data within period relative to now.
     (ticksInPeriod |> Array.sumBy (fun x-> ((x.High + x.Low + x.Close)/3.0M) * x.Volume)) // Sum price times volume per trade
      / (ticksInPeriod |> Array.sumBy (fun x -> x.Volume)) // Sum volume over whole period
 
-  printfn "Frame intercepted and processed"
+  // Place order / make trade
+  member x.PlaceOrder(value) =
+    portfolio.Positions.Add(value)
+    printfn "Order placed: %A" value
+
+  member x.IncomingTick(tick:Tick) = 
+   // TODO Trading logic meat in here
+   let currentPrice = tick.Close
+   
+//   let historicalPrices = FinanceLibrary.
+//   let calcVwap = x.VolumeWeightedAvgPrice()
+   let calcVwap = 
+    let prices = getStockPrices symbol 5
+    let vwap = volumeWeightedAvgPrice prices 3.0
+    vwap
+
+   // if the stocks price less than the vwap by 0.5% and max 
+   // the limit has not been exceeded.
+   if tick.Close < (calcVwap * 0.995M) && (portfolio.PositionsValue - limit > 0.0M) then
+    x.PlaceOrder(symbol,-100M)
+
+ end

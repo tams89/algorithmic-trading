@@ -1,4 +1,4 @@
-﻿namespace FinanceLibrary.YahooFinance.Option
+﻿namespace FinanceLibrary
 
 /// Note must be executed in interactive/script to auto load chart.
 module YahooAPIStockChart =
