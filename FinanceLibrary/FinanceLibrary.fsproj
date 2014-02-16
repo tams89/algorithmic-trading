@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>67e10d3d-ab07-433c-9632-1940207057ac</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <RootNamespace>FinanceLibrary</RootNamespace>
     <AssemblyName>FinanceLibrary</AssemblyName>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
@@ -61,6 +61,7 @@
     <None Include="app.config" />
     <None Include="FSharp.Charting.fsx" />
     <None Include="Charting.fsx" />
+    <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Charting">
