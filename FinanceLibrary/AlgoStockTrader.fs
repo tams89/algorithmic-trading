@@ -57,43 +57,45 @@ module AlgoStockTrader =
     Value:decimal }
 
  type Portfolio(startingCash:decimal, startDate:DateTime) = class
-  let mutable cash = 0M 
-  let mutable profitAndLoss = 0M 
-  let mutable positions = new System.Collections.Generic.HashSet<Order>() 
-  let mutable positionsValue = new System.Collections.Generic.Dictionary<string,decimal>() 
-  let mutable portfolioValue = 0M 
-  let mutable returns = 0M 
+  
+  let mutable positions = new System.Collections.Generic.List<Order>()
+  let mutable positionsValue = 0.0M
+  let mutable currentPrice = 0M
 
   member x.StartDate = startDate /// The starting date of the portfolio.
-  member x.StartingCash = startingCash /// The date this portfolio was created.
+  member x.StartingCash = startingCash /// Starting capital.
+
+  member x.CurrentPrice
+   with get() = currentPrice
+   and set(value) = currentPrice <- value
 
   /// Current amount of available cash.
   member x.Cash
-   with get() = cash
-   and set(value) = cash <- value
+   with get() = startingCash - x.PositionsValue
   
   /// Total profit and loss up until the current time.
   member x.ProfitAndLoss
-   with get() = profitAndLoss <- (cash + (positionsValue.Values |> Seq.sum)) - startingCash
+   with get() = x.Cash + x.PositionsValue - startingCash
   
   /// Dictionary of open positions (i.e. Stock GOOG 124).
   member x.Positions
    with get() = positions
 
   /// Total value of the open positions.
+  /// TODO: This changes with every tick and so must be recalculated using most recent tick price.
   member x.PositionsValue
-   with get() = positionsValue.Values |> Seq.sum
+   with get() = x.Positions |> Seq.filter (fun y -> y.Value = 0M) |> Seq.sumBy (fun y -> y.Value)
 
   /// Sum of positionsValue and cash.
   member x.PortfolioValue 
-   with get() = portfolioValue <- cash + (positionsValue.Values |> Seq.sum)
+   with get() = x.Cash + x.PositionsValue
 
   /// Cumulative percentage returns for entire portfolio up until now. Pentage gain or loss of start cash.
   member x.Returns
-   with get() = returns <- profitAndLoss / startingCash
+   with get() = x.ProfitAndLoss / startingCash
 
-  member x.AddPosition(value) = positions.Add(value)
-  member x.RemovePosition(value) = positions.Remove(value)
+  member x.AddPosition(order) = positions.Add(order)
+  member x.ClosePosition(value) = positions.Remove(value)
 
  end
 
@@ -122,22 +124,22 @@ module AlgoStockTrader =
   member private x.IncomingTick(tick:Tick) = 
    // TODO Trading logic meat in here
    let currentPrice = tick.Close
-   
-   let calcVwap = volumeWeightedAvgPrice prices 3.0
-
+   let calcVwap = volumeWeightedAvgPrice prices 5.0
    // if the stocks price less than the vwap by 0.5% and the limit has not been exceeded.
-   if tick.Close < (calcVwap * 0.995M) && (portfolio.PositionsValue - limit > 0.0M) then
-    let order : Order = { Symbol = symbol; Quantity = -100; OrderType = Short; Value =  100M * tick.Close }
+   if tick.Close < (calcVwap * 0.995M) && (portfolio.PositionsValue > -limit) then
+    let order : Order = { Symbol = symbol; Quantity = -100; OrderType = Short; Value =  -100M * tick.Close }
     x.PlaceOrder(order)
    // if the stock price has increased by 0.1% to the vwap and we havent reached exposure limit then buy.
-   elif tick.Close > calcVwap * 1.001M && (portfolio.PositionsValue - limit > 0.0M) then
+   elif tick.Close > calcVwap * 1.001M && (portfolio.PositionsValue < +limit) then
     let order : Order = { Symbol = symbol; Quantity = +100; OrderType = Long; Value =  100M * tick.Close }
     x.PlaceOrder(order)
 
-  member x.BackTest = 
+  member x.BackTest () = 
    printfn "Algorithm Started."
    for tick in prices do 
     x.IncomingTick(tick)
+   printfn "Total Long: %A" (portfolio.Positions |> Seq.filter (fun y -> y.OrderType = Long) |> Seq.sumBy (fun u -> u.Value))
+   printfn "Total Short: %A" (portfolio.Positions |> Seq.filter (fun y -> y.OrderType = Short) |> Seq.sumBy (fun u -> u.Value))
    printfn "Algorithm Ended."
 
  end
@@ -145,4 +147,4 @@ module AlgoStockTrader =
  let system = 
   let p = new Portfolio(1000000M, DateTime.Today)
   let trader = new Trader(p, "GOOG")
-  trader.BackTest
+  trader.BackTest()
