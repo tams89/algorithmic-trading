@@ -51,7 +51,7 @@ module AlgoStockTrader =
 
  type OrderType = Long | Short | Cover
 
-
+ [<StructuredFormatDisplay("hello {Symbol}")>]
  type Order = 
   { Symbol:string
     Quantity:int
@@ -78,7 +78,7 @@ module AlgoStockTrader =
   /// Current amount of available cash.
   /// Sum of starting capital minus the positions as they were ordered (not the current value of the positions).
   member x.Cash
-   with get() = startingCash - (positions |> Seq.sumBy (fun y -> y.Value))
+   with get() = startingCash - (positions |> Seq.filter (fun y -> y.OrderType = Long || y.OrderType = Short) |> Seq.sumBy (fun y -> y.Value))
   
   /// Total profit and loss up until the current time.
   member x.ProfitAndLoss
@@ -100,7 +100,7 @@ module AlgoStockTrader =
 
   /// Total value of all short positions.
   member x.ShortPositionsValue
-   with get() = positions |> Seq.filter (fun y -> y.OrderType = Short) |> Seq.sumBy (fun y -> y.Value)
+   with get() = positions |> Seq.filter (fun y -> not y.Covered &&  y.OrderType = Short) |> Seq.sumBy (fun y -> y.Value)
 
   /// Sum of positionsValue and cash.
   member x.PortfolioValue 
