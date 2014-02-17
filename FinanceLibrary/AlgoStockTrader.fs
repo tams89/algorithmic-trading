@@ -127,8 +127,8 @@ module AlgoStockTrader =
   let prices = getStockPrices symbol backTestPeriod
 
   // Limit the exposure on open positions.
-  let maxlimit = 1000000.1M
-  let minlimit = -1000000M
+  let maxlimit = portfolio.StartingCash + 0.1M
+  let minlimit = -portfolio.StartingCash 
 
   // Calculated using mean high low close.
   let volumeWeightedAvgPrice (prices:Tick[]) (period:float) = 
@@ -149,20 +149,23 @@ module AlgoStockTrader =
    let currentPrice = tick.Low
    let calcVwap = volumeWeightedAvgPrice prices 3.0
 
+   // Shares limit to buy/sell
+   let numOfShares = 5M
+
    // if the stocks price less than the vwap by 0.5% and the limit has not been exceeded.
    if currentPrice < (calcVwap * 0.995M) && (portfolio.PositionsValue > minlimit) then
-    let order = { Symbol = symbol; Quantity = -100; OrderType = Short; Value = -100M * currentPrice; Covered = false }
+    let order = { Symbol = symbol; Quantity = - int numOfShares; OrderType = Short; Value = -numOfShares * currentPrice; Covered = false }
     x.PlaceOrder(order)
 
    // if the stock price has increased by 0.1% to the vwap and we havent reached exposure limit then buy.
    elif currentPrice > (calcVwap * 1.001M) && (portfolio.PositionsValue < maxlimit) then
-    let order = { Symbol = symbol; Quantity = +100; OrderType = Long; Value = +100M * currentPrice; Covered = false }
+    let order = { Symbol = symbol; Quantity = + int numOfShares; OrderType = Long; Value = +numOfShares * currentPrice; Covered = false }
     x.PlaceOrder(order)
 
    // Close any short positions when the market starts to rise again.
    // If there any shorts where the market value has risen close to the the initial shorting value then close the position.
    elif not portfolio.ShortPositions.IsEmpty then
-    let shortsToClose = portfolio.ShortPositions |> Seq.filter (fun y -> not y.Covered && abs(y.Value / 100M) >= 0.8M * currentPrice) |> Seq.toList
+    let shortsToClose = portfolio.ShortPositions |> Seq.filter (fun y -> not y.Covered && abs(y.Value / numOfShares) >= 0.8M * currentPrice) |> Seq.toList
     printfn "%A Short Positions Closed" shortsToClose.Length
     for short in shortsToClose do 
      let order = { Symbol = short.Symbol; Quantity = abs short.Quantity; OrderType = Cover; Value = abs (decimal short.Quantity) * currentPrice; Covered = true }
@@ -180,12 +183,12 @@ module AlgoStockTrader =
    printfn "Covered %A Shares" (portfolio.Positions |> Seq.filter (fun y -> y.OrderType = Cover) |> Seq.sumBy (fun y -> y.Quantity))
    printfn "Algorithm Ended."
 
-  /// Default constructor for GOOG 1000
+  /// Default constructor for Google, 4 years back, trading limits are $startingCash + 0.1 to -$startingCash.
   new (portfolio) = Trader(portfolio, "GOOG", 1000) 
  end
 
 
  let system = 
-  let p = new Portfolio(1000000M, DateTime.Today)
+  let p = new Portfolio(10000M, DateTime.Today)
   let trader = new Trader(p)
   trader.BackTest()
