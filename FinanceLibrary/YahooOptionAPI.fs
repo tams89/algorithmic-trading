@@ -1,4 +1,4 @@
-﻿namespace FinanceLibrary.YahooFinance.Option
+﻿namespace FinanceLibrary.YahooFinanceAPI.Option
 
 module YahooOptionAPI = 
 

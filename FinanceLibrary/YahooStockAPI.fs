@@ -1,16 +1,10 @@
-﻿namespace FinanceLibrary
+﻿namespace FinanceLibrary.YahooFinanceAPI.Stock
 
-/// Note must be executed in interactive/script to auto load chart.
-module YahooAPIStockChart =
+module YahooStockAPI =
 
  open System
  open System.Net
- open System.Drawing
- open FSharp
- open FSharp.Charting
-
- let url = "http://ichart.finance.yahoo.com/table.csv?s="
-
+ 
  type Tick = 
   { Date:DateTime
     Open:decimal
@@ -19,6 +13,8 @@ module YahooAPIStockChart =
     Close:decimal
     Volume:decimal
     AdjClose:decimal }
+
+ let url = "http://ichart.finance.yahoo.com/table.csv?s="
  
  /// Returns prices (as tuple) of a given stock for a 
  /// specified number of days (starting from the most recent)
@@ -41,7 +37,3 @@ module YahooAPIStockChart =
                     Volume = decimal infos.[5]
                     AdjClose = decimal infos.[6] } }
    |> Seq.take count |> Array.ofSeq |> Array.rev
- 
- let chart numDays ticker = 
-  [ for x in getStockPrices ticker numDays do yield x.Date, x.High, x.Low, x.Close, x.AdjClose ]
-  |> Chart.Candlestick 

@@ -13,56 +13,22 @@
 module AlgoStockTrader = 
 
  open System
- open System.Net
-
- let url = "http://ichart.finance.yahoo.com/table.csv?s="
-
- type Tick = 
-  { Date:DateTime
-    Open:decimal
-    High:decimal
-    Low:decimal
-    Close:decimal
-    Volume:decimal
-    AdjClose:decimal }
- 
- /// Returns prices (as tuple) of a given stock for a 
- /// specified number of days (starting from the most recent)
- let getStockPrices stock count =
-  // Download the data and split it into lines
-  let wc = new WebClient()
-  let data = wc.DownloadString(url + stock)
-  let dataLines = 
-      data.Split([| '\n' |], StringSplitOptions.RemoveEmptyEntries) 
- 
-  // Parse lines of the CSV file and take specified
-  // number of days using in the oldest to newest order
-  seq { for line in dataLines |> Seq.skip 1 do
-            let infos = line.Split(',')
-            yield { Date = DateTime.Parse infos.[0]
-                    Open = decimal infos.[1]
-                    High = decimal infos.[2]
-                    Low = decimal infos.[3]
-                    Close = decimal infos.[4]
-                    Volume = decimal infos.[5]
-                    AdjClose = decimal infos.[6] } }
-   |> Seq.take count |> Array.ofSeq |> Array.rev
-
+ open FinanceLibrary.YahooFinanceAPI.Stock.YahooStockAPI
 
  type OrderType = Long | Short | Cover
 
- [<StructuredFormatDisplay("hello {Symbol}")>]
- type Order = 
-  { Symbol:string
-    Quantity:int
-    OrderType:OrderType
-    Value:decimal
-    mutable Covered:bool }
+ type Order = { 
+  Symbol:string
+  Quantity:int
+  OrderType:OrderType
+  Value:decimal
+  mutable Covered:bool }
+ with 
+  override this.ToString() = sprintf "%A, %A, %A, %A, %A" this.Symbol this.Quantity this.OrderType this.Value this.Covered
 
-
+ /// PORTFOLIO
  type Portfolio(startingCash:decimal, startDate:DateTime) = class
-  let mutable positions = new System.Collections.Generic.List<Order>()
-  let transactions = new System.Collections.Generic.List<decimal>()
+  let positions = new System.Collections.Generic.List<Order>()
   let mutable currentPrice = 0M
 
   /// The starting date of the portfolio.
@@ -117,12 +83,10 @@ module AlgoStockTrader =
   member x.CloseShortPositions(short,order) = 
    short.Covered <- true
    positions.Add(order)
-
  end
 
-
+ /// TRADER
  type Trader (portfolio:Portfolio, symbol:string, backTestPeriod) = class
-
   // Get historical stock prices for the symbol
   let prices = getStockPrices symbol backTestPeriod
 
@@ -166,7 +130,6 @@ module AlgoStockTrader =
    // If there any shorts where the market value has risen close to the the initial shorting value then close the position.
    elif not portfolio.ShortPositions.IsEmpty then
     let shortsToClose = portfolio.ShortPositions |> Seq.filter (fun y -> not y.Covered && abs(y.Value / numOfShares) >= 0.8M * currentPrice) |> Seq.toList
-    printfn "%A Short Positions Closed" shortsToClose.Length
     for short in shortsToClose do 
      let order = { Symbol = short.Symbol; Quantity = abs short.Quantity; OrderType = Cover; Value = abs (decimal short.Quantity) * currentPrice; Covered = true }
      portfolio.CloseShortPositions(short,order)
@@ -178,17 +141,17 @@ module AlgoStockTrader =
     portfolio.CurrentPrice <- prices.[prices.Length - 1].Close // Assign most recent price for position end value calculations.
     x.IncomingTick(tick)
 
-   printfn "Sold %A Shares" (portfolio.Positions |> Seq.filter (fun y -> y.OrderType = Short) |> Seq.sumBy (fun y -> y.Quantity))
-   printfn "Bought %A Shares" (portfolio.Positions |> Seq.filter (fun y -> y.OrderType = Long) |> Seq.sumBy (fun y -> y.Quantity))
-   printfn "Covered %A Shares" (portfolio.Positions |> Seq.filter (fun y -> y.OrderType = Cover) |> Seq.sumBy (fun y -> y.Quantity))
+   printfn "Shorted %A Shares" (portfolio.Positions |> Seq.filter (fun y -> y.OrderType = Short) |> Seq.sumBy (fun y -> y.Quantity))
+   printfn "Bought (Long) %A Shares" (portfolio.Positions |> Seq.filter (fun y -> y.OrderType = Long) |> Seq.sumBy (fun y -> y.Quantity))
+   printfn "Covered %A Shorts" (portfolio.Positions |> Seq.filter (fun y -> y.OrderType = Cover) |> Seq.sumBy (fun y -> y.Quantity))
    printfn "Algorithm Ended."
 
   /// Default constructor for Google, 4 years back, trading limits are $startingCash + 0.1 to -$startingCash.
   new (portfolio) = Trader(portfolio, "GOOG", 1000) 
  end
 
-
- let system = 
+ /// EXECUTION
+ let execute = 
   let p = new Portfolio(10000M, DateTime.Today)
   let trader = new Trader(p)
   trader.BackTest()

@@ -54,13 +54,13 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Compile Include="YahooOptionAPI.fs" />
-    <Compile Include="YahooAPIStockChart.fs" />
+    <Compile Include="YahooStockAPI.fs" />
     <Compile Include="AlgoStockTrader.fs" />
     <None Include="YahooOptions.fsx" />
     <None Include="packages.config" />
-    <None Include="app.config" />
     <None Include="FSharp.Charting.fsx" />
     <None Include="Charting.fsx" />
+    <None Include="app.config" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
