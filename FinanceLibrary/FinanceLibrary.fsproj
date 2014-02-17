@@ -53,6 +53,7 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
+    <Compile Include="RecordsNInterfaces.fs" />
     <Compile Include="YahooOptionAPI.fs" />
     <Compile Include="YahooStockAPI.fs" />
     <Compile Include="AlgoPortfolio.fs" />

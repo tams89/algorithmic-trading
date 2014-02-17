@@ -3,17 +3,7 @@
 module AlgoPortfolio =
 
  open System
-
- type OrderType = Long | Short | Cover
-
- type Order = { 
-  Symbol:string
-  Quantity:int
-  OrderType:OrderType
-  Value:decimal
-  mutable Covered:bool }
- with 
-  override this.ToString() = sprintf "%A, %A, %A, %A, %A" this.Symbol this.Quantity this.OrderType this.Value this.Covered
+ open FinanceLibrary
 
  /// PORTFOLIO
  type Portfolio(startingCash:decimal, startDate:DateTime) = class

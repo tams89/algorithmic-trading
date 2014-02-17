@@ -1,4 +1,4 @@
-﻿using FinanceLibrary.YahooFinance.Option;
+﻿using FinanceLibrary.YahooFinanceAPI.Option;
 using NUnit.Framework;
 using System.Linq;
 

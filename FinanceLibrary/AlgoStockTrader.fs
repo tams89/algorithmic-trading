@@ -13,13 +13,17 @@
 module AlgoStockTrader = 
 
  open System
- open FinanceLibrary.YahooFinanceAPI.Stock.YahooStockAPI
+ open FinanceLibrary
+ open FinanceLibrary.YahooFinanceAPI.Stock
  open FinanceLibrary.AlgorithmicTrading.AlgoPortfolio
  
+ // Interface to dataservice.
+ let stockService = new GetStockPriceService() :> IStockService
+
  /// TRADER
  type Trader (portfolio:Portfolio, symbol:string, backTestPeriod) = class
   // Get historical stock prices for the symbol
-  let prices = getStockPrices symbol backTestPeriod
+  let prices = stockService.GetStockPrices symbol backTestPeriod
 
   // Limit the exposure on open positions.
   let maxlimit = portfolio.StartingCash + 0.1M
@@ -64,7 +68,8 @@ module AlgoStockTrader =
     for short in shortsToClose do 
      let order = { Symbol = short.Symbol; Quantity = abs short.Quantity; OrderType = Cover; Value = abs (decimal short.Quantity) * currentPrice; Covered = true }
      portfolio.CloseShortPositions(short,order)
-
+  
+  /// Backtest uses historical data to simulate returns.
   member x.BackTest () = 
    printfn "Algorithm Started."
    
