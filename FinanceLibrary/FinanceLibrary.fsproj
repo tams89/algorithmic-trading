@@ -55,6 +55,7 @@
   <ItemGroup>
     <Compile Include="YahooOptionAPI.fs" />
     <Compile Include="YahooStockAPI.fs" />
+    <Compile Include="AlgoPortfolio.fs" />
     <Compile Include="AlgoStockTrader.fs" />
     <None Include="YahooOptions.fsx" />
     <None Include="packages.config" />
