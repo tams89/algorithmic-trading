@@ -1,19 +1,19 @@
-﻿/* Copyright (C) 2013 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
- * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
+﻿///* Copyright (C) 2013 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
+// * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
-using IBApi;
+//using IBApi;
 
-namespace Test.UnitTest.IBImpl
-{
-    public class ScannerSubscriptionSamples
-    {
-        public static ScannerSubscription GetScannerSubscription()
-        {
-            var scanSub = new ScannerSubscription();
-            scanSub.Instrument = "STOCK.EU";
-            scanSub.LocationCode = "STK.EU.IBIS";
-            scanSub.ScanCode = "HOT_BY_VOLUME";
-            return scanSub;
-        }
-    }
-}
+//namespace Test.UnitTest.IBImpl
+//{
+//    public class ScannerSubscriptionSamples
+//    {
+//        public static ScannerSubscription GetScannerSubscription()
+//        {
+//            var scanSub = new ScannerSubscription();
+//            scanSub.Instrument = "STOCK.EU";
+//            scanSub.LocationCode = "STK.EU.IBIS";
+//            scanSub.ScanCode = "HOT_BY_VOLUME";
+//            return scanSub;
+//        }
+//    }
+//}
