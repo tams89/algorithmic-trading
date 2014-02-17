@@ -2,5 +2,5 @@
     module Main =
         [<EntryPoint>]
         let main args =
-            printfn "ans %A" (AlgorithmicTrading.AlgoStockTrader.execute)
+            printfn "ans %A" (AlgorithmicTrading.MomentumVWAP.execute)
             0
