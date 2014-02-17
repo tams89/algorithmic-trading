@@ -49,14 +49,15 @@ module AlgoStockTrader =
    |> Seq.take count |> Array.ofSeq |> Array.rev
 
 
- type OrderType = Long | Short
+ type OrderType = Long | Short | Cover
 
 
  type Order = 
   { Symbol:string
     Quantity:int
     OrderType:OrderType
-    Value:decimal }
+    Value:decimal
+    mutable Covered:bool }
 
 
  type Portfolio(startingCash:decimal, startDate:DateTime) = class
@@ -87,9 +88,19 @@ module AlgoStockTrader =
   member x.Positions
    with get() = positions
 
+  member x.ShortPositions
+   with get() = positions |> Seq.filter (fun y -> y.OrderType = Short) |> Seq.toList
+
   /// Total value of the open positions.
   member x.PositionsValue
-   with get() = decimal(positions |> Seq.sumBy (fun y -> y.Quantity)) * currentPrice
+   with get() = 
+    decimal(positions |> Seq.filter (fun y -> y.OrderType = Long) |> Seq.sumBy (fun y -> y.Quantity)) * currentPrice + // long positions value.
+     (positions |> Seq.filter (fun y -> y.OrderType = Short) |> Seq.sumBy (fun y -> abs y.Value)) - // short positions value.
+      decimal(positions |> Seq.filter (fun y -> y.OrderType = Cover) |> Seq.sumBy (fun y -> y.Quantity)) * currentPrice // short covering cost.
+
+  /// Total value of all short positions.
+  member x.ShortPositionsValue
+   with get() = positions |> Seq.filter (fun y -> y.OrderType = Short) |> Seq.sumBy (fun y -> y.Value)
 
   /// Sum of positionsValue and cash.
   member x.PortfolioValue 
@@ -99,8 +110,14 @@ module AlgoStockTrader =
   member x.Returns
    with get() = x.ProfitAndLoss / startingCash
 
+  // A new position / order.
   member x.AddPosition(order) = positions.Add(order)
-//  member x.ClosePosition(value) = positions.Remove(value)
+  
+  // Profit gained will be the initial short price say $100 * Quantity minus the price they shares were bought back at say $75 * Quantity. 
+  member x.CloseShortPositions(short,order) = 
+   short.Covered <- true
+   positions.Add(order)
+
  end
 
 
@@ -123,6 +140,9 @@ module AlgoStockTrader =
 
   /// Place order / make trade
   member private x.PlaceOrder(order:Order) = portfolio.AddPosition(order)
+
+  /// Close position
+  member private x.CloseShortPosition(order) = portfolio.CloseShortPositions(order)
   
   /// Call on incoming data
   member private x.IncomingTick(tick:Tick) = 
@@ -131,25 +151,37 @@ module AlgoStockTrader =
 
    // if the stocks price less than the vwap by 0.5% and the limit has not been exceeded.
    if currentPrice < (calcVwap * 0.995M) && (portfolio.PositionsValue > minlimit) then
-    let order = { Symbol = symbol; Quantity = -100; OrderType = Short; Value = -100M * currentPrice }
+    let order = { Symbol = symbol; Quantity = -100; OrderType = Short; Value = -100M * currentPrice; Covered = false }
     x.PlaceOrder(order)
 
    // if the stock price has increased by 0.1% to the vwap and we havent reached exposure limit then buy.
    elif currentPrice > (calcVwap * 1.001M) && (portfolio.PositionsValue < maxlimit) then
-    let order = { Symbol = symbol; Quantity = +100; OrderType = Long; Value = 100M * currentPrice }
+    let order = { Symbol = symbol; Quantity = +100; OrderType = Long; Value = +100M * currentPrice; Covered = false }
     x.PlaceOrder(order)
+
+   // Close any short positions when the market starts to rise again.
+   // If there any shorts where the market value has risen close to the the initial shorting value then close the position.
+   elif not portfolio.ShortPositions.IsEmpty then
+    let shortsToClose = portfolio.ShortPositions |> Seq.filter (fun y -> not y.Covered && abs(y.Value / 100M) >= 0.8M * currentPrice) |> Seq.toList
+    printfn "%A Short Positions Closed" shortsToClose.Length
+    for short in shortsToClose do 
+     let order = { Symbol = short.Symbol; Quantity = abs short.Quantity; OrderType = Cover; Value = abs (decimal short.Quantity) * currentPrice; Covered = true }
+     portfolio.CloseShortPositions(short,order)
 
   member x.BackTest () = 
    printfn "Algorithm Started."
+   
    for tick in prices do 
-    x.IncomingTick(tick)
     portfolio.CurrentPrice <- prices.[prices.Length - 1].Close // Assign most recent price for position end value calculations.
+    x.IncomingTick(tick)
+
    printfn "Sold %A Shares" (portfolio.Positions |> Seq.filter (fun y -> y.OrderType = Short) |> Seq.sumBy (fun y -> y.Quantity))
    printfn "Bought %A Shares" (portfolio.Positions |> Seq.filter (fun y -> y.OrderType = Long) |> Seq.sumBy (fun y -> y.Quantity))
+   printfn "Covered %A Shares" (portfolio.Positions |> Seq.filter (fun y -> y.OrderType = Cover) |> Seq.sumBy (fun y -> y.Quantity))
    printfn "Algorithm Ended."
 
-  /// Default constructor for GOOG 600
-  new (portfolio:Portfolio) = Trader(portfolio, "GOOG", 1000) 
+  /// Default constructor for GOOG 1000
+  new (portfolio) = Trader(portfolio, "GOOG", 1000) 
  end
 
 
