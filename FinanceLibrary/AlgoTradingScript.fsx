@@ -25,7 +25,7 @@ open AlgorithmicTrading.MomentumVWAP
   let stockService = new GetStockDataWeb() :> IStockService
   // Get historical stock prices for the symbol
   let symbol = "MSFT"
-  let backTestPeriod = 2000
+  let backTestPeriod = 3000
 
   let prices = stockService.GetStockPrices symbol backTestPeriod
   let p = new Portfolio(10000M, DateTime.Today)

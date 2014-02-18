@@ -52,14 +52,15 @@ module MomentumVWAP =
                 portfolio.CurrentPrice <- currentPrice
                 /// Limit the exposure on open positions.
                 let maxlimit = portfolio.Cash + 0.1M
-                let minlimit = - abs (portfolio.Cash * 0.8M)
+                let minlimit = - abs (portfolio.Cash * 0.9M)
+                printfn "MinLimit %A, MaxLimit %A" minlimit maxlimit
 
                 let calcVwap = volumeWeightedAvgPrice prices 3.0
 //                printfn "Current Volume Weighted Average Price = %A" calcVwap
 
                 /// Shares limit to buy/sell
-                let numOfShares = floor (portfolio.StartingCash / currentPrice)
-//                printfn "Share sell/buy limit = %A" numOfShares
+                let numOfShares = floor (portfolio.Cash / currentPrice)
+                printfn "Share sell/buy limit = %A" numOfShares
 
                 /// if the stocks price less than the vwap by 0.5% and the limit has not been exceeded.
                 if currentPrice < (calcVwap * 0.995M) && (portfolio.ShortPositionsValue > minlimit) then 
@@ -89,7 +90,8 @@ module MomentumVWAP =
                     if not portfolio.ShortPositions.IsEmpty then 
                         let shortsToClose = 
                             portfolio.ShortPositions
-                            |> Seq.filter (fun x -> not x.Covered && abs x.Value >= 0.5M * currentPrice * abs (decimal x.Quantity))
+                            // current price is greater than the short price by 1%.
+                            |> Seq.filter (fun x -> not x.Covered &&  abs (x.Value / decimal x.Quantity) > currentPrice * 0.99M) 
                         for short in shortsToClose do
                             let order = 
                                 { Symbol = short.Symbol
@@ -111,7 +113,8 @@ module MomentumVWAP =
                    | x when not(String.IsNullOrEmpty(tick.Date.ToString())) -> Some x
                    | x when tick.High > 0M && tick.Low > 0M && tick.Close > 0M && tick.Volume > 0M -> Some x
                    | _ -> None
-                 if (filterCrappyData tick).IsSome then this.IncomingTick(tick)
+                 if (filterCrappyData tick).IsSome then 
+                  this.IncomingTick(tick)
                  else printfn "Crappy data detected %A" tick
 
                 printfn "Shorted %A Shares" (portfolio.Positions

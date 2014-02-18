@@ -40,9 +40,12 @@ module AlgoPortfolio =
   /// Total value of the open positions.
   member this.PositionsValue
    with get() = 
-    decimal(positions |> Seq.filter (fun x -> x.OrderType = Long) |> Seq.sumBy (fun x -> x.Quantity)) * currentPrice + // long positions value.
-     (positions |> Seq.filter (fun x -> x.OrderType = Short) |> Seq.sumBy (fun x -> abs x.Value)) - // short positions value.
-      decimal(positions |> Seq.filter (fun x -> x.OrderType = Cover) |> Seq.sumBy (fun x -> x.Value)) // short covering cost.
+    let positionValue (order:Order) = 
+     match order.OrderType with 
+     | Long -> decimal order.Quantity * currentPrice // postive must be adjusted for current market value rather than value at purchase.
+     | Short -> abs order.Value // Expected value by shorting.
+     | Cover -> - abs order.Value // negative must be subtracted from the price of shorts and start of shorting.
+    positions |> Seq.sumBy (fun x -> positionValue x)
 
   /// Total value of all short positions.
   member this.ShortPositionsValue
@@ -50,7 +53,7 @@ module AlgoPortfolio =
 
   /// Sum of positionsValue and cash.
   member this.PortfolioValue 
-   with get() = this.Cash + this.PositionsValue
+   with get() = this.Cash + this.PositionsValue - this.ShortPositionsValue
 
   /// Cumulative percentage returns for entire portfolio up until now. Pentage gain or loss of start cash.
   member this.Returns
@@ -65,16 +68,22 @@ module AlgoPortfolio =
    positions.Add(order)
 
   override this.ToString() = 
-   sprintf "At close the Portfolio Assets are: 
+   sprintf "At close the Portfolio's Assets are: 
             Starting Cash %A, 
             Current Cash %A,
             Total Portfolio Value %A, 
             Current Positions %A, 
-            Cumulative Returns %A, 
-            Position Value %A,
-            Cumulative PnL %A, 
             Current Short Positions %A,
-            Short Position Value %A" this.StartingCash this.Cash this.PortfolioValue this.Positions.Count this.Returns 
-                               this.PositionsValue this.ProfitAndLoss this.ShortPositions.Length
-                               this.ShortPositionsValue 
+            Position Value %A,
+            Short Position Value %A,
+            Cumulative Returns %A, 
+            Cumulative PnL %A " this.StartingCash 
+                                 this.Cash 
+                                 this.PortfolioValue 
+                                 this.Positions.Count 
+                                 this.ShortPositions.Length 
+                                 this.PositionsValue 
+                                 this.ShortPositionsValue 
+                                 this.Returns 
+                                 this.ProfitAndLoss 
  end  
