@@ -1,5 +1,6 @@
 ﻿namespace FinanceLibrary
 
+open FinanceLibrary
 open System
 open System.Data
 open System.Data.Linq
@@ -7,8 +8,10 @@ open Microsoft.FSharp.Data.TypeProviders
 open Microsoft.FSharp.Linq
 
 module DatabaseLayer = 
+ 
  type dbSchema = SqlDataConnection< "Data Source=.;Initial Catalog=AlgorithmicTrading;Integrated Security=True" >
- type FetchData() = 
+
+ type GetStockDataDB() = 
      let db = dbSchema.GetDataContext()
      do 
          // Enable SQL logging to console.
@@ -16,8 +19,8 @@ module DatabaseLayer =
      
      let fetchData (symbol : string) (daysBack : int) = 
          query { for row in db.InterDay_HistoricalStock do
-                 where (row.Symbol = symbol && row.Date >= DateTime.Today.AddDays(float -daysBack))
-                 sortByDescending row.Date
+                 where (row.Symbol = symbol && row.Date >= DateTime.Today.AddDays(float(-daysBack)))
+                 sortBy row.Date
                  select row }
 
          |> Seq.map (fun x -> 
@@ -32,7 +35,3 @@ module DatabaseLayer =
 
      interface IStockService with
          member this.GetStockPrices symbol daysBack = fetchData symbol daysBack
-
-
- let test = new FetchData() :> IStockService
- let res = test.GetStockPrices "MSFT" 1000

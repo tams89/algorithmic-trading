@@ -5,7 +5,7 @@ module Stock =
     open System.Net
     open FinanceLibrary
     
-    type GetStockPriceService() = 
+    type GetStockDataWeb() = 
         let url = "http://ichart.finance.yahoo.com/table.csv?s="
         
         /// Returns prices (as tuple) of a given stock for a 

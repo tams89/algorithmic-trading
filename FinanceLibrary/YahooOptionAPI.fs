@@ -16,21 +16,22 @@ module Option =
             new Uri("http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.options%20where%20symbol%20in%20('" 
                     + ticker 
                     + "')&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys")
+
         let xn s = XName.Get(s)
         let (?) (el : XElement) name = el.Element(xn name).Value
         
         /// Converts a string to a decimal.
         let cd value = 
             match Decimal.TryParse(value) with
-            | (false, _) -> 0M
             | (true, n) -> n
+            | (false,_) -> 0M
         
         /// Converts a string to an integer.
         let ci value = 
             match Int32.TryParse(value) with
-            | (false, _) -> 0
             | (true, n) -> n
-        
+            | (false,_) -> 0
+
         /// Calculates expiry date by whether option is mini-option or ordinary.
         let expiryDate (optionTicker : string) = 
             let symbolLength = 
@@ -124,10 +125,7 @@ module Option =
                           (cd e?strikePrice) (cd e?lastPrice)
                   AtTheMoney = atTheMoney (cd e?strikePrice) (cd e?lastPrice) }
             
-            let listOfElems = 
-                feed.Root.Element(xn "results").Elements(xn "optionsChain")
-                    .Elements(xn "option")
-            listOfElems
+            feed.Root.Element(xn "results").Elements(xn "optionsChain").Elements(xn "option") 
             |> PSeq.ordered
             |> PSeq.map elementToOptionData
             |> PSeq.toList

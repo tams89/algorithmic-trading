@@ -20,7 +20,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>true</Optimize>
+    <Optimize>false</Optimize>
     <Tailcalls>false</Tailcalls>
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
@@ -61,6 +61,7 @@
     <Compile Include="YahooStockAPI.fs" />
     <Compile Include="AlgoPortfolio.fs" />
     <Compile Include="AlgoStockTrader.fs" />
+    <None Include="AlgoTradingScript.fsx" />
     <None Include="YahooOptions.fsx" />
     <None Include="packages.config" />
     <None Include="FSharp.Charting.fsx" />

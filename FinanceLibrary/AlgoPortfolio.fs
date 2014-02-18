@@ -23,7 +23,8 @@ module AlgoPortfolio =
   /// Current amount of available cash.
   /// Sum of starting capital minus the positions as they were ordered (not the current value of the positions).
   member this.Cash
-   with get() = startingCash - (positions |> Seq.filter (fun x -> x.OrderType = Long || x.OrderType = Short) |> Seq.sumBy (fun x -> x.Value))
+   with get() = startingCash - (positions |> Seq.filter (fun x -> x.OrderType = Long || x.OrderType = Short || x.OrderType = Cover) 
+                               |> Seq.sumBy (fun x -> x.Value))
   
   /// Total profit and loss up until the current time.
   member this.ProfitAndLoss
@@ -34,18 +35,18 @@ module AlgoPortfolio =
    with get() = positions
 
   member this.ShortPositions
-   with get() = positions |> Seq.filter (fun x -> x.OrderType = Short) |> Seq.toList
+   with get() = positions |> Seq.filter (fun x -> x.OrderType = Short && not x.Covered) |> Seq.toList
 
   /// Total value of the open positions.
   member this.PositionsValue
    with get() = 
     decimal(positions |> Seq.filter (fun x -> x.OrderType = Long) |> Seq.sumBy (fun x -> x.Quantity)) * currentPrice + // long positions value.
      (positions |> Seq.filter (fun x -> x.OrderType = Short) |> Seq.sumBy (fun x -> abs x.Value)) - // short positions value.
-      decimal(positions |> Seq.filter (fun x -> x.OrderType = Cover) |> Seq.sumBy (fun x -> x.Quantity)) * currentPrice // short covering cost.
+      decimal(positions |> Seq.filter (fun x -> x.OrderType = Cover) |> Seq.sumBy (fun x -> x.Value)) // short covering cost.
 
   /// Total value of all short positions.
   member this.ShortPositionsValue
-   with get() = positions |> Seq.filter (fun x -> not x.Covered &&  x.OrderType = Short) |> Seq.sumBy (fun x -> x.Value)
+   with get() = positions |> Seq.filter (fun x -> x.OrderType = Short && not x.Covered) |> Seq.sumBy (fun x -> x.Value)
 
   /// Sum of positionsValue and cash.
   member this.PortfolioValue 
@@ -62,4 +63,18 @@ module AlgoPortfolio =
   member this.CloseShortPositions(short,order) = 
    short.Covered <- true
    positions.Add(order)
- end
+
+  override this.ToString() = 
+   sprintf "At close the Portfolio Assets are: 
+            Starting Cash %A, 
+            Current Cash %A,
+            Total Portfolio Value %A, 
+            Current Positions %A, 
+            Cumulative Returns %A, 
+            Position Value %A,
+            Cumulative PnL %A, 
+            Current Short Positions %A,
+            Short Position Value %A" this.StartingCash this.Cash this.PortfolioValue this.Positions.Count this.Returns 
+                               this.PositionsValue this.ProfitAndLoss this.ShortPositions.Length
+                               this.ShortPositionsValue 
+ end  
