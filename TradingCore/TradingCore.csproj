@@ -17,11 +17,12 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
+    <Optimize>true</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -60,7 +61,7 @@
     <Compile Include="DTO\TickDTO.cs" />
     <Compile Include="IBImpl\IBClient.cs" />
     <Compile Include="Model\HistoricalStock.cs" />
-    <Compile Include="Model\Interface\IEntity.cs" />
+    <Compile Include="Model\Interface\EntityBase.cs" />
     <Compile Include="Model\Tick.cs" />
     <Compile Include="ORM\Dapper\Mapping\HistoricalStockMap.cs" />
     <Compile Include="ORM\Dapper\Mapping\TickMap.cs" />

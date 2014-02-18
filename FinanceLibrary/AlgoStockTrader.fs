@@ -17,11 +17,8 @@ module MomentumVWAP =
  open FinanceLibrary.YahooFinanceAPI.Stock
  open FinanceLibrary.AlgorithmicTrading.AlgoPortfolio
  
- // Interface to dataservice.
- let stockService = new GetStockPriceService() :> IStockService
-
  /// TRADER
- type Trader (portfolio:Portfolio, symbol:string, backTestPeriod) = class
+ type Trader (portfolio:Portfolio, symbol:string, backTestPeriod, stockService:IStockService) = class
   // Get historical stock prices for the symbol
   let prices = stockService.GetStockPrices symbol backTestPeriod
 
@@ -45,7 +42,7 @@ module MomentumVWAP =
   /// Close position
   member private this.CloseShortPosition(order) = portfolio.CloseShortPositions(order)
   
-  /// Call on incoming data
+  /// The algorithm
   member private this.IncomingTick(tick:Tick) = 
    let currentPrice = tick.Low
    let calcVwap = volumeWeightedAvgPrice prices 3.0
@@ -87,6 +84,7 @@ module MomentumVWAP =
 
  /// EXECUTION
  let execute = 
+  let stockService = new GetStockPriceService() :> IStockService
   let p = new Portfolio(10000M, DateTime.Today)
-  let trader = new Trader(p, "MSFT", 1000)
+  let trader = new Trader(p, "MSFT", 1000, stockService)
   trader.BackTest()

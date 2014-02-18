@@ -5,7 +5,7 @@ using TradingCore.Model.Interface;
 
 namespace TradingCore.Repository.Interface
 {
-    public interface IReadOnlyRespository<TEntity> where TEntity : class, IEntity
+    public interface IReadOnlyRespository<TEntity> where TEntity : EntityBase, new()
     {
         TEntity Get(Guid id);
         IEnumerable<TEntity> GetBy(Expression<Func<TEntity, object>> memberExpression, dynamic memberValue);

@@ -1,6 +1,6 @@
 ﻿namespace TradingCore.Model.Interface
 {
-    public interface IEntity
+    public abstract class EntityBase
     {
 
     }

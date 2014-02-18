@@ -3,7 +3,7 @@ using TradingCore.Model.Interface;
 
 namespace TradingCore.Model
 {
-    public class HistoricalStock : IEntity
+    public class HistoricalStock : EntityBase
     {
         public HistoricalStock()
         {

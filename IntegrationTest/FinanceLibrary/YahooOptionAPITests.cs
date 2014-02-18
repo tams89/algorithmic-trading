@@ -1,4 +1,5 @@
-﻿using FinanceLibrary.YahooFinanceAPI.Option;
+﻿using FinanceLibrary;
+using FinanceLibrary.YahooFinanceAPI;
 using NUnit.Framework;
 using System.Linq;
 
@@ -12,7 +13,8 @@ namespace Test.IntegrationTest.FinanceLibrary
         [TestCase("", false)]
         public void GetOptionData(string symbol, bool shouldPass)
         {
-            var data = YahooOptionAPI.GetOptionsData(symbol);
+            var service = new Option.GetOptionTableService() as IOptionService;
+            var data = service.GetOptionTable(symbol);
             Assert.IsTrue(data.Any() == shouldPass);
         }
     }

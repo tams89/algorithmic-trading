@@ -3,7 +3,7 @@ using TradingCore.Model.Interface;
 
 namespace TradingCore.Model
 {
-    public class Tick : IEntity
+    public class Tick : EntityBase
     {
         public Tick() { }
 

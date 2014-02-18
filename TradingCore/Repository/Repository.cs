@@ -15,7 +15,7 @@ namespace TradingCore.Repository
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
     public class Repository<TEntity> : IRepository<TEntity>
-        where TEntity : class, IEntity
+        where TEntity : EntityBase, new()
     {
         /// <summary>
         /// Database connection.
