@@ -113,15 +113,14 @@ module MomentumVWAP =
             member this.BackTest () = 
 
                 // Filter any useless or erroneous data.
-                let prices = 
+                let cleanPrices : Tick [] = 
                  let limit = prices.GetUpperBound(0)
                  let rec tickArray array counter =
-                  if counter <= limit then
-                   let tick = prices.[counter]
-                   if tick.High >= 1M && tick.Low >= 1M && tick.Close >= 1M && tick.Volume >= 1M then
-                    tickArray (Array.append array [| tick |]) (counter + 1)
-                   else tickArray array (counter + 1)
-                  else array
+                  match prices.[counter] with 
+                  | tick when counter < limit && tick.High >= 1M && tick.Low >= 1M && tick.Close >= 1M && tick.Volume >= 1M 
+                    -> tickArray (Array.append array [| tick |]) (counter + 1)
+                  | tick when counter = limit -> array
+                  | _ -> tickArray array (counter + 1)
                  tickArray Array.empty<Tick> 0
 
                 // Backtest execute block
@@ -131,7 +130,7 @@ module MomentumVWAP =
                  
                  // Execute trading algorithm on the historical data.
 //                 prices |> PSeq.ordered |> PSeq.iter (fun tick -> this.IncomingTick(tick, iterating))
-                 prices |> Seq.iter (fun tick -> this.IncomingTick(tick, iterating))
+                 cleanPrices |> Seq.iter (fun tick -> this.IncomingTick(tick, iterating))
 
 
                  // Store the constant iterated over, and portfolio results.
