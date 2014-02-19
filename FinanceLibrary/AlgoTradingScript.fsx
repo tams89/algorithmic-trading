@@ -22,7 +22,7 @@ open AlgorithmicTrading.MomentumVWAP
 
  /// EXECUTION
  let execute = 
-  let stockService = new GetStockDataWeb() :> IStockService
+  let stockService = new GetStockDataDB() :> IStockService
   // Get historical stock prices for the symbol
   let symbol = "MSFT"
   let backTestPeriod = 3000

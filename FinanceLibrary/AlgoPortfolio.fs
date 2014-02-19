@@ -53,7 +53,7 @@ module AlgoPortfolio =
 
   /// Sum of positionsValue and cash.
   member this.PortfolioValue 
-   with get() = this.Cash + this.PositionsValue - this.ShortPositionsValue
+   with get() = this.Cash + this.PositionsValue + this.ShortPositionsValue
 
   /// Cumulative percentage returns for entire portfolio up until now. Pentage gain or loss of start cash.
   member this.Returns
@@ -68,8 +68,7 @@ module AlgoPortfolio =
    positions.Add(order)
 
   override this.ToString() = 
-   sprintf "At close the Portfolio's Assets are: 
-            Starting Cash %A, 
+   sprintf "Starting Cash %A, 
             Current Cash %A,
             Total Portfolio Value %A, 
             Current Positions %A, 
@@ -78,12 +77,12 @@ module AlgoPortfolio =
             Short Position Value %A,
             Cumulative Returns %A, 
             Cumulative PnL %A " this.StartingCash 
-                                 this.Cash 
-                                 this.PortfolioValue 
-                                 this.Positions.Count 
-                                 this.ShortPositions.Length 
-                                 this.PositionsValue 
-                                 this.ShortPositionsValue 
-                                 this.Returns 
-                                 this.ProfitAndLoss 
+                                this.Cash 
+                                this.PortfolioValue 
+                                this.Positions.Count 
+                                this.ShortPositions.Length 
+                                this.PositionsValue 
+                                this.ShortPositionsValue 
+                                this.Returns 
+                                this.ProfitAndLoss 
  end  
