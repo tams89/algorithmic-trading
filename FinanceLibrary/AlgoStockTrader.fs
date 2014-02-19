@@ -22,7 +22,7 @@ module MomentumVWAP =
     let mutable shortVwap = 0M
     
     /// TRADER
-    type Trader (portfolio : Portfolio, logger, symbol : string, prices : Tick []) = 
+    type Trader (portfolio : Portfolio, logger : WriteIterationData, symbol : string, prices : Tick []) = 
         class
 
             /// Calculated using mean high low close.
@@ -107,7 +107,8 @@ module MomentumVWAP =
 
             /// Backtest uses historical data to simulate returns.
             member this.BackTest () = 
-                printfn "Algorithm Started."
+
+                // Filter any useless or erroneous data.
                 let filterCrappyData (tick:Tick) = 
                       match tick with
                       | x when not (String.IsNullOrEmpty(tick.Date.ToString())) && 
@@ -117,39 +118,53 @@ module MomentumVWAP =
                                tick.Volume >= 1M
                                 -> true
                       | _ -> false
-                
-                let prices = prices |> Seq.filter (fun tick -> filterCrappyData tick) |> Seq.toArray
-                // Iterate constants
-                for value in [0.800M..0.002M..0.999M] do
-                 shortVwap <- value
-                 for tick in prices do 
-                    this.IncomingTick(tick)
+
+                // Cleaned list of tick data.
+                let prices = prices 
+                             |> Seq.filter (fun tick -> filterCrappyData tick) 
+                             |> Seq.toArray
+
+                // Backtest execute block
+                let executeRun x = 
+                 
+                 // Set the value to the constant being iterated for optimsation.
+                 shortVwap <- x
+
+                 printfn "Algorithm Started."
+                 
+                 // Execute trading algorithm on the historical data.
+                 prices |> Seq.iter (fun tick -> this.IncomingTick(tick))
 
                  // Store the constant iterated over, and portfolio results.
-                 let result = portfolio.StartingCash,
-                              portfolio.Cash 
-                              portfolio.PortfolioValue, 
-                              portfolio.Positions.Length, 
-                              portfolio.ShortPositions.Length, 
-                              portfolio.PositionsValue, 
-                              portfolio.ShortPositionsValue, 
-                              portfolio.Returns, 
-                              portfolio.ProfitAndLoss, 
-                              value, 
-                              "ShortVWAPPercentage"
-                 logger.InsertIterationData(result)
-                 
-                let positionQuantity orderType = 
-                 portfolio.Positions 
-                 |> Seq.filter (fun x -> x.OrderType = orderType) 
-                 |> Seq.sumBy (fun x -> x.Quantity)
+                 logger.InsertIterationData(portfolio.StartingCash,
+                                            portfolio.Cash,
+                                            portfolio.PortfolioValue, 
+                                            portfolio.Positions.Length, 
+                                            portfolio.ShortPositions.Length, 
+                                            portfolio.PositionsValue, 
+                                            portfolio.ShortPositionsValue, 
+                                            portfolio.Returns, 
+                                            portfolio.ProfitAndLoss, 
+                                            x, 
+                                            "ShortVWAPPercentage")
 
-                printfn "Shorted %A Shares" (positionQuantity Short)
-                printfn "Covered %A Shorts" (positionQuantity Cover)
-                printfn "Bought (Long) %A Shares" (positionQuantity Long)
-                printfn "%A" portfolio
-                printfn "Date Range %A to %A" prices.[0].Date prices.[prices.GetUpperBound(0)].Date
+                 let positionQuantity orderType = 
+                  portfolio.Positions 
+                  |> Seq.filter (fun x -> x.OrderType = orderType) 
+                  |> Seq.sumBy (fun x -> x.Quantity)
+                 printfn "Shorted %A Shares" (positionQuantity Short)
+                 printfn "Covered %A Shorts" (positionQuantity Cover)
+                 printfn "Bought (Long) %A Shares" (positionQuantity Long)
+                 printfn "%A" portfolio
+                 printfn "Date Range %A to %A" prices.[0].Date prices.[prices.GetUpperBound(0)].Date
+
+                // Iterate constants
+                [ 0.6000M..0.0020M..1.000M ] 
+                |> PSeq.ordered
+                |> PSeq.iter executeRun 
+                
                 printfn "Algorithm Ended."
+
         end
 
     /// EXECUTION
@@ -157,8 +172,7 @@ module MomentumVWAP =
      let stockService = new GetStockDataWeb() :> IStockService
      // Get historical stock prices for the symbol
      let symbol = "MSFT"
-     let backTestPeriod = 1000
-    
+     let backTestPeriod = 3000
      let prices = stockService.GetStockPrices symbol backTestPeriod
      let l = new WriteIterationData()
      let p = new Portfolio(10000M, DateTime.Today)

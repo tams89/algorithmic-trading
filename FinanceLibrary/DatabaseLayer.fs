@@ -35,26 +35,31 @@ module DatabaseLayer =
          member this.GetStockPrices symbol daysBack = fetchData symbol daysBack
 
  type WriteIterationData () = 
+  let db = dbSchema.GetDataContext()
+  let iterationTable = db.Portfolio_Iterations
+  do 
+   // Enable SQL logging to console.
+   db.DataContext.Log <- System.Console.Out
+
   /// Writes iteration data results to database.
-  member this.InsertIterationData (data : decimal*decimal*decimal*decimal*decimal*decimal*decimal*decimal*decimal*decimal*string) = 
+  member this.InsertIterationData (data : decimal*decimal*decimal*int*int*decimal*decimal*decimal*decimal*decimal*string) = 
    let sc,cc,pv,cp,sp,psv,spv,r,pnl,cv,ct = data // data from tuple.
    
    // data formatted to SQL table.
-   let newData = dbSchema.ServiceTypes.Portfolio_Iterations(StartingCash = sc,
-                                                            CurrentCash = cc,
-                                                            PortfolioValue = pv,
-                                                            CurrentPositions = int cp,
-                                                            ShortPositions = int sp,
-                                                            PositionValue = psv,
-                                                            ShortPositionValue = spv,
-                                                            Returns = r,
-                                                            ProfitAndLoss = pnl,
-                                                            ConstantValue = cv,
-                                                            ConstantType = ct)
-   
+   let newData = new dbSchema.ServiceTypes.Portfolio_Iterations(IterationId = Guid.NewGuid(),
+                                                                StartingCash = sc,
+                                                                CurrentCash = cc,
+                                                                PortfolioValue = pv,
+                                                                CurrentPositions = cp,
+                                                                ShortPositions = sp,
+                                                                PositionValue = psv,
+                                                                ShortPositionValue = spv,
+                                                                Returns = r,
+                                                                ProfitAndLoss = pnl,
+                                                                ConstantValue = cv,
+                                                                ConstantType = ct)
+   iterationTable.InsertOnSubmit(newData)
    try
-    dbSchema.GetDataContext().Portfolio_Iterations.InsertOnSubmit(newData)
-    dbSchema.GetDataContext().Portfolio_Iterations.Context.SubmitChanges()
-    printfn "Inserted new rows"
+    db.Portfolio_Iterations.Context.SubmitChanges()
    with
     | exn -> printfn "Exception: \n%s" exn.Message
