@@ -4,6 +4,7 @@ module AlgoPortfolio =
 
  open System
  open FinanceLibrary.Records
+ open Microsoft.FSharp.Collections
 
  /// PORTFOLIO
  type Portfolio(startingCash:decimal, startDate:DateTime) = class
@@ -23,7 +24,7 @@ module AlgoPortfolio =
   /// Current amount of available cash.
   /// Sum of starting capital minus the positions as they were ordered (not the current value of the positions).
   member this.Cash
-   with get() = startingCash - (Seq.sumBy (fun x -> x.Value) positions)
+   with get() = startingCash - (PSeq.sumBy (fun x -> x.Value) positions)
   
   /// Total profit and loss up until the current time.
   member this.ProfitAndLoss
@@ -36,8 +37,8 @@ module AlgoPortfolio =
   // Un-Covered Short positions.
   member this.ShortPositions
    with get() = positions 
-    |> Seq.filter (fun x -> x.OrderType = Short && x.Value < 0M) 
-    |> Seq.toList
+    |> PSeq.filter (fun x -> x.OrderType = Short && x.Value < 0M) 
+    |> PSeq.toList
 
   /// Total value of all open positions.
   member this.PositionsValue
@@ -47,13 +48,13 @@ module AlgoPortfolio =
      | Long -> decimal order.Quantity * currentPrice
      | Short -> order.Value
      | Cover -> order.Value
-    positions |> Seq.sumBy (fun x -> positionValue x)
+    positions |> PSeq.sumBy (fun x -> positionValue x)
 
   /// Value of all short positions.
   member this.ShortPositionsValue
    with get() = positions 
-    |> Seq.filter (fun x -> x.OrderType = Short && x.Value < 0M) 
-    |> Seq.sumBy (fun x -> x.Value)
+    |> PSeq.filter (fun x -> x.OrderType = Short && x.Value < 0M) 
+    |> PSeq.sumBy (fun x -> x.Value)
 
   /// Sum of positionsValue and cash.
   member this.PortfolioValue 
