@@ -8,7 +8,7 @@ open FinanceLibrary.Records
 
 module DatabaseLayer = 
  
- type dbSchema = SqlDataConnection< "Data Source=.;Initial Catalog=AlgorithmicTrading;Integrated Security=True" >
+ type dbSchema = SqlDataConnection<"Data Source=.;Initial Catalog=AlgorithmicTrading;Integrated Security=True">
 
  type GetStockDataDB() = 
      let db = dbSchema.GetDataContext()
@@ -33,3 +33,28 @@ module DatabaseLayer =
 
      interface IStockService with
          member this.GetStockPrices symbol daysBack = fetchData symbol daysBack
+
+ type WriteIterationData () = 
+  /// Writes iteration data results to database.
+  member this.InsertIterationData (data : decimal*decimal*decimal*decimal*decimal*decimal*decimal*decimal*decimal*decimal*string) = 
+   let sc,cc,pv,cp,sp,psv,spv,r,pnl,cv,ct = data // data from tuple.
+   
+   // data formatted to SQL table.
+   let newData = dbSchema.ServiceTypes.Portfolio_Iterations(StartingCash = sc,
+                                                            CurrentCash = cc,
+                                                            PortfolioValue = pv,
+                                                            CurrentPositions = int cp,
+                                                            ShortPositions = int sp,
+                                                            PositionValue = psv,
+                                                            ShortPositionValue = spv,
+                                                            Returns = r,
+                                                            ProfitAndLoss = pnl,
+                                                            ConstantValue = cv,
+                                                            ConstantType = ct)
+   
+   try
+    dbSchema.GetDataContext().Portfolio_Iterations.InsertOnSubmit(newData)
+    dbSchema.GetDataContext().Portfolio_Iterations.Context.SubmitChanges()
+    printfn "Inserted new rows"
+   with
+    | exn -> printfn "Exception: \n%s" exn.Message

@@ -17,13 +17,13 @@ module MomentumVWAP =
     open YahooFinanceAPI.Stock
     open AlgorithmicTrading.AlgoPortfolio
     open DatabaseLayer
+
+    /// CONSTANTS TO BE ITERATED FOR OPTIMAL VALUE IN CAPS
+    let mutable shortVwap = 0M
     
     /// TRADER
-    type Trader (portfolio : Portfolio, symbol : string, prices : Tick []) = 
+    type Trader (portfolio : Portfolio, logger, symbol : string, prices : Tick []) = 
         class
-
-            /// CONSTANTS TO BE ITERATED FOR OPTIMAL VALUE IN CAPS
-            let mutable shortVwap = 0M
 
             /// Calculated using mean high low close.
             let volumeWeightedAvgPrice (prices : Tick []) (period : float) = 
@@ -59,11 +59,6 @@ module MomentumVWAP =
              
              portfolio.AddPosition orderRecord
 
-            /// CONSTANTS TO BE ITERATED FOR OPTIMAL VALUE IN CAPS
-            member private this.SHORTVWAP
-             with get() = shortVwap
-             and set(value) = shortVwap <- value
-            
             // Sets the value of short to positive as  to represent the gained profit.
             member private this.ClosedShortOrder shortOrder = portfolio.CloseShortPositions shortOrder
             
@@ -84,7 +79,7 @@ module MomentumVWAP =
 
                 // SHORT
                 /// if the stocks price less than the vwap by 0.5% and the limit has not been exceeded.
-                if currentPrice < (calcVwap * 0.995M) && (portfolio.PositionsValue > minlimit) then 
+                if currentPrice < (calcVwap * shortVwap) && (portfolio.PositionsValue > minlimit) then 
                  this.PlaceOrder(symbol, tick.Date, numOfShares, currentPrice, Short)
                 
                 /// LONG
@@ -123,15 +118,27 @@ module MomentumVWAP =
                                 -> true
                       | _ -> false
                 
-                let prices = prices |> Seq.filter (fun tick -> filterCrappyData tick) |> Seq.toList
-                
+                let prices = prices |> Seq.filter (fun tick -> filterCrappyData tick) |> Seq.toArray
                 // Iterate constants
-                let constantRange = [0.800M..0.002M..0.999M]
-                for tick in prices do 
-                 for value in constantRange do
-                    this.SHORTVWAP <- value
+                for value in [0.800M..0.002M..0.999M] do
+                 shortVwap <- value
+                 for tick in prices do 
                     this.IncomingTick(tick)
 
+                 // Store the constant iterated over, and portfolio results.
+                 let result = portfolio.StartingCash,
+                              portfolio.Cash 
+                              portfolio.PortfolioValue, 
+                              portfolio.Positions.Length, 
+                              portfolio.ShortPositions.Length, 
+                              portfolio.PositionsValue, 
+                              portfolio.ShortPositionsValue, 
+                              portfolio.Returns, 
+                              portfolio.ProfitAndLoss, 
+                              value, 
+                              "ShortVWAPPercentage"
+                 logger.InsertIterationData(result)
+                 
                 let positionQuantity orderType = 
                  portfolio.Positions 
                  |> Seq.filter (fun x -> x.OrderType = orderType) 
@@ -153,6 +160,7 @@ module MomentumVWAP =
      let backTestPeriod = 1000
     
      let prices = stockService.GetStockPrices symbol backTestPeriod
+     let l = new WriteIterationData()
      let p = new Portfolio(10000M, DateTime.Today)
-     let trader = new Trader(p, symbol, prices)
+     let trader = new Trader(p, l, symbol, prices)
      trader.BackTest()
