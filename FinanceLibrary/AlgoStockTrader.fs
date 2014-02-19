@@ -25,19 +25,16 @@ module MomentumVWAP =
             /// Calculated using mean high low close.
             let volumeWeightedAvgPrice (prices : Tick []) (period : float) = 
              let pricesInRange = prices 
-                                 |> PSeq.filter (fun x -> x.Date >= prices.[prices.GetUpperBound(0)].Date.AddDays(-period))
-                                 |> PSeq.toArray
-
-             let rec SumTradePriceVolume sum (counter:int) = 
+                                 |> Seq.filter (fun x -> x.Date >= prices.[prices.GetUpperBound(0)].Date.AddDays(-period))
+                                 |> Seq.toArray
+             let rec SumTradePriceVolume sum volSum counter = 
                let limit = pricesInRange.Length
                if counter < limit then 
                 let tick = pricesInRange.[counter]
-                let tickPrice = (tick.High + tick.Low + tick.Close ) / 3M
-                SumTradePriceVolume (sum + tickPrice * decimal tick.Volume) (counter + 1)
-               else sum
-
-             let volume = pricesInRange |> Seq.sumBy (fun x -> x.Volume)
-             let vwap = SumTradePriceVolume 0M 0 / volume
+                let tickPrice = (tick.High + tick.Low + tick.Close ) / 3.0M
+                SumTradePriceVolume (sum + tickPrice * tick.Volume) (volSum + tick.Volume)  (counter + 1)
+               else sum / volSum
+             let vwap = SumTradePriceVolume 0M 0M 0
              vwap
             
             /// Place order / make trade
@@ -108,36 +105,34 @@ module MomentumVWAP =
                 /// then close the positions.
                 elif not portfolio.ShortPositions.IsEmpty then
                  portfolio.ShortPositions 
-                 |> PSeq.filter (fun x -> tick.Date > x.Date.AddDays(5.0))
-                 |> PSeq.iter (fun (short) -> this.PlaceOrder(short.Symbol, tick.Date, (abs short.Quantity), currentPrice, Cover)
-                                              this.ClosedShortOrder(short))
+                 |> Seq.filter (fun x -> tick.Date > x.Date.AddDays(5.0))
+                 |> Seq.iter (fun (short) -> this.PlaceOrder(short.Symbol, tick.Date, (abs short.Quantity), currentPrice, Cover)
+                                             this.ClosedShortOrder(short))
 
             /// Backtest uses historical data to simulate returns.
             member this.BackTest () = 
 
                 // Filter any useless or erroneous data.
-                let filterCrappyData (tick:Tick) = 
-                      match tick with
-                      | x when not (String.IsNullOrEmpty(tick.Date.ToString())) && 
-                               tick.High >= 1M && 
-                               tick.Low >= 1M && 
-                               tick.Close >= 1M && 
-                               tick.Volume >= 1M
-                                -> true
-                      | _ -> false
+                let prices = 
+                 let limit = prices.GetUpperBound(0)
+                 let rec tickArray array counter =
+                  if counter <= limit then
+                   let tick = prices.[counter]
+                   if tick.High >= 1M && tick.Low >= 1M && tick.Close >= 1M && tick.Volume >= 1M then
+                    tickArray (Array.append array [| tick |]) (counter + 1)
+                   else tickArray array (counter + 1)
+                  else array
+                 tickArray Array.empty<Tick> 0
 
-                // Cleaned list of tick data.
-                let prices = prices
-                             |> PSeq.filter (fun tick -> filterCrappyData tick) 
-                             |> PSeq.toArray
-                
                 // Backtest execute block
                 let executeRun iterating = 
                  
                  printfn "Algorithm Started."
                  
                  // Execute trading algorithm on the historical data.
+//                 prices |> PSeq.ordered |> PSeq.iter (fun tick -> this.IncomingTick(tick, iterating))
                  prices |> Seq.iter (fun tick -> this.IncomingTick(tick, iterating))
+
 
                  // Store the constant iterated over, and portfolio results.
                  logger.InsertIterationData(portfolio.StartingCash,
