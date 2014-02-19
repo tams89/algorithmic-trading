@@ -27,30 +27,40 @@ module MomentumVWAP =
 
             /// Calculated using mean high low close.
             let volumeWeightedAvgPrice (prices : Tick []) (period : float) = 
-                let ticksInPeriod = 
-                    prices /// Get data within period relative to now.
-                    |> PSeq.filter (fun x -> x.Date >= prices.[prices.GetUpperBound(0)].Date.AddDays(-period))
-                    |> PSeq.toArray
-                (ticksInPeriod /// Sum price times volume per trade
-                 |> Array.sumBy (fun x -> ((x.High + x.Low + x.Close) / 3.0M) * x.Volume))
-                 / 
-                (ticksInPeriod /// Sum volume over whole period
-                 |> Array.sumBy (fun x -> x.Volume))
+             let pricesInRange = prices 
+                                 |> PSeq.filter (fun x -> x.Date >= prices.[prices.GetUpperBound(0)].Date.AddDays(-period))
+                                 |> PSeq.toArray
+
+             let rec SumTradePriceVolume sum (counter:int) = 
+               let limit = pricesInRange.Length
+               if counter < limit then 
+                let tick = pricesInRange.[counter]
+                let tickPrice = (tick.High + tick.Low + tick.Close ) / 3M
+                SumTradePriceVolume (sum + tickPrice * decimal tick.Volume) (counter + 1)
+               else sum
+
+             let volume = pricesInRange |> PSeq.sumBy (fun x -> x.Volume)
+             let vwap = SumTradePriceVolume 0M 0 / volume
+             vwap
             
             /// Place order / make trade
             member private this.PlaceOrder (symbol, date, quantity, price, orderType) = 
              let orderRecord = 
+
               match orderType with
+
               | Long -> { Symbol = symbol; 
                           Date = date;
                           Quantity = quantity;
                           OrderType = Long;
                           Value = (decimal quantity) * price; }
+
               | Short -> { Symbol = symbol; 
                            Date = date;
                            Quantity = - quantity;
                            OrderType = Short;
                            Value = - (decimal quantity) * price; }
+
               | Cover -> { Symbol = symbol; 
                            Date = date;
                            Quantity = quantity;
