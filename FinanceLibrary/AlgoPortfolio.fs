@@ -8,7 +8,7 @@ module AlgoPortfolio =
 
  /// PORTFOLIO
  type Portfolio(startingCash:decimal, startDate:DateTime) = class
-  let mutable positions : Order list = []
+  let mutable positions : Order array = [||]
   let mutable currentPrice = 0M
 
   /// The starting date of the portfolio.
@@ -65,7 +65,7 @@ module AlgoPortfolio =
    with get() = this.ProfitAndLoss / startingCash
 
   // A new position / order.
-  member this.AddPosition(order) = positions <- order::positions 
+  member this.AddPosition(order) = positions <- positions |> Array.append [| order |]
   
   // Profit gained will be the initial short price say $100 * Quantity 
   // minus the price they shares were bought back at say $75 * Quantity. 

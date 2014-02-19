@@ -36,7 +36,7 @@ module MomentumVWAP =
                 SumTradePriceVolume (sum + tickPrice * decimal tick.Volume) (counter + 1)
                else sum
 
-             let volume = pricesInRange |> PSeq.sumBy (fun x -> x.Volume)
+             let volume = pricesInRange |> Seq.sumBy (fun x -> x.Volume)
              let vwap = SumTradePriceVolume 0M 0 / volume
              vwap
             
