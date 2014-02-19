@@ -29,8 +29,8 @@ module MomentumVWAP =
             let volumeWeightedAvgPrice (prices : Tick []) (period : float) = 
                 let ticksInPeriod = 
                     prices /// Get data within period relative to now.
-                    |> Array.filter (fun x -> x.Date <= DateTime.Today.AddDays(-period) || 
-                                              x.Date >= DateTime.Today.AddDays(+period))
+                    |> PSeq.filter (fun x -> x.Date >= prices.[prices.GetUpperBound(0)].Date.AddDays(-period))
+                    |> PSeq.toArray
                 (ticksInPeriod /// Sum price times volume per trade
                  |> Array.sumBy (fun x -> ((x.High + x.Low + x.Close) / 3.0M) * x.Volume))
                  / 
@@ -120,10 +120,10 @@ module MomentumVWAP =
                       | _ -> false
 
                 // Cleaned list of tick data.
-                let prices = prices 
+                let prices = prices
                              |> Seq.filter (fun tick -> filterCrappyData tick) 
                              |> Seq.toArray
-
+                
                 // Backtest execute block
                 let executeRun x = 
                  
@@ -169,10 +169,10 @@ module MomentumVWAP =
 
     /// EXECUTION
     let execute = 
-     let stockService = new GetStockDataWeb() :> IStockService
+     let stockService = new GetStockDataDB() :> IStockService
      // Get historical stock prices for the symbol
      let symbol = "MSFT"
-     let backTestPeriod = 3000
+     let backTestPeriod = 10000
      let prices = stockService.GetStockPrices symbol backTestPeriod
      let l = new WriteIterationData()
      let p = new Portfolio(10000M, DateTime.Today)
