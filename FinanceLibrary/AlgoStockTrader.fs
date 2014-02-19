@@ -70,7 +70,7 @@ module MomentumVWAP =
                 let calcVwap = volumeWeightedAvgPrice prices 3.0
                 
                 /// Shares limit to buy/sell
-//                let numOfShares = floor (portfolio.Cash / currentPrice)
+                //let numOfShares = floor (portfolio.Cash / currentPrice)
                 let numOfShares = 100M
 
                 // SHORT
