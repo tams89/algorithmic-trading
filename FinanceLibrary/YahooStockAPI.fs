@@ -3,7 +3,6 @@
 module Stock = 
     open System
     open System.Net
-    open FinanceLibrary
     open FinanceLibrary.Records
     open FinanceLibrary.Interfaces
     

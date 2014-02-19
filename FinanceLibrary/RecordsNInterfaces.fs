@@ -38,7 +38,7 @@ module Records =
        Quantity : decimal
        OrderType : OrderType
        mutable Value : decimal }
-     override this.ToString() = sprintf "%A, %A, %A, %A" this.Symbol this.Quantity this.OrderType this.Value
+     override this.ToString() = sprintf "%A, %A, %A, %A, %A" this.Symbol this.Date this.Quantity this.OrderType this.Value
 
 module Interfaces =
  open Records

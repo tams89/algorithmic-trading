@@ -13,6 +13,7 @@ module MomentumVWAP =
     open Microsoft.FSharp.Collections
     open FinanceLibrary
     open FinanceLibrary.Records
+    open FinanceLibrary.Interfaces
     open YahooFinanceAPI.Stock
     open AlgorithmicTrading.AlgoPortfolio
     open DatabaseLayer
@@ -20,6 +21,10 @@ module MomentumVWAP =
     /// TRADER
     type Trader (portfolio : Portfolio, symbol : string, prices : Tick []) = 
         class
+
+            /// CONSTANTS TO BE ITERATED FOR OPTIMAL VALUE IN CAPS
+            let mutable shortVwap = 0M
+
             /// Calculated using mean high low close.
             let volumeWeightedAvgPrice (prices : Tick []) (period : float) = 
                 let ticksInPeriod = 
@@ -53,29 +58,33 @@ module MomentumVWAP =
                            Value = - (decimal quantity) * price; }
              
              portfolio.AddPosition orderRecord
+
+            /// CONSTANTS TO BE ITERATED FOR OPTIMAL VALUE IN CAPS
+            member private this.SHORTVWAP
+             with get() = shortVwap
+             and set(value) = shortVwap <- value
             
             // Sets the value of short to positive as  to represent the gained profit.
             member private this.ClosedShortOrder shortOrder = portfolio.CloseShortPositions shortOrder
             
             /// The algorithm
             member private this.IncomingTick (tick : Tick) = 
+
+                // Update with latest price information.
                 let currentPrice = tick.Low
-                
-                // Update portfolio with latest price information.
                 portfolio.CurrentPrice <- currentPrice
                 
                 /// Limit the exposure on open positions.
                 let maxlimit = portfolio.Cash + 0.1M
-                let minlimit = - (portfolio.Cash * 0.9M)
+                let minlimit = - portfolio.Cash
                 let calcVwap = volumeWeightedAvgPrice prices 3.0
                 
                 /// Shares limit to buy/sell
-                //let numOfShares = floor (portfolio.Cash / currentPrice)
                 let numOfShares = 100M
 
                 // SHORT
                 /// if the stocks price less than the vwap by 0.5% and the limit has not been exceeded.
-                if currentPrice < (calcVwap * 0.995M) && (portfolio.ShortPositionsValue > minlimit) then 
+                if currentPrice < (calcVwap * 0.995M) && (portfolio.PositionsValue > minlimit) then 
                  this.PlaceOrder(symbol, tick.Date, numOfShares, currentPrice, Short)
                 
                 /// LONG
@@ -92,6 +101,15 @@ module MomentumVWAP =
                  |> Seq.iter (fun (short) -> this.PlaceOrder(short.Symbol, tick.Date, (abs short.Quantity), currentPrice, Cover)
                                              this.ClosedShortOrder(short))
 
+                /// COVER Daily
+                /// If there any shorts where the market value has risen close to the the initial shorting value 
+                /// then close the positions.
+                elif not portfolio.ShortPositions.IsEmpty then
+                 portfolio.ShortPositions 
+                 |> Seq.filter (fun x -> tick.Date > x.Date.AddDays(5.0))
+                 |> Seq.iter (fun (short) -> this.PlaceOrder(short.Symbol, tick.Date, (abs short.Quantity), currentPrice, Cover)
+                                             this.ClosedShortOrder(short))
+
             /// Backtest uses historical data to simulate returns.
             member this.BackTest () = 
                 printfn "Algorithm Started."
@@ -104,9 +122,15 @@ module MomentumVWAP =
                                tick.Volume >= 1M
                                 -> true
                       | _ -> false
-                prices
-                |> Seq.filter (fun tick -> filterCrappyData tick)
-                |> Seq.iter (fun tick -> this.IncomingTick(tick))
+                
+                let prices = prices |> Seq.filter (fun tick -> filterCrappyData tick) |> Seq.toList
+                
+                // Iterate constants
+                let constantRange = [0.800M..0.002M..0.999M]
+                for tick in prices do 
+                 for value in constantRange do
+                    this.SHORTVWAP <- value
+                    this.IncomingTick(tick)
 
                 let positionQuantity orderType = 
                  portfolio.Positions 
@@ -120,3 +144,15 @@ module MomentumVWAP =
                 printfn "Date Range %A to %A" prices.[0].Date prices.[prices.GetUpperBound(0)].Date
                 printfn "Algorithm Ended."
         end
+
+    /// EXECUTION
+    let execute = 
+     let stockService = new GetStockDataWeb() :> IStockService
+     // Get historical stock prices for the symbol
+     let symbol = "MSFT"
+     let backTestPeriod = 1000
+    
+     let prices = stockService.GetStockPrices symbol backTestPeriod
+     let p = new Portfolio(10000M, DateTime.Today)
+     let trader = new Trader(p, symbol, prices)
+     trader.BackTest()

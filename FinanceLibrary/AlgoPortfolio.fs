@@ -52,7 +52,7 @@ module AlgoPortfolio =
   /// Value of all short positions.
   member this.ShortPositionsValue
    with get() = positions 
-    |> Seq.filter (fun x -> x.OrderType = Short && x.Value > 0M) 
+    |> Seq.filter (fun x -> x.OrderType = Short && x.Value < 0M) 
     |> Seq.sumBy (fun x -> x.Value)
 
   /// Sum of positionsValue and cash.
