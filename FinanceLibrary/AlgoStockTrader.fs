@@ -18,9 +18,8 @@ module MomentumVWAP =
     open DatabaseLayer
     
     /// TRADER
-    type Trader(portfolio : Portfolio, symbol : string, prices : Tick []) = 
+    type Trader (portfolio : Portfolio, symbol : string, prices : Tick []) = 
         class
-            
             /// Calculated using mean high low close.
             let volumeWeightedAvgPrice (prices : Tick []) (period : float) = 
                 let ticksInPeriod = 
@@ -34,87 +33,90 @@ module MomentumVWAP =
                 (ticksInPeriod |> Array.sumBy (fun x -> x.Volume))
             
             /// Place order / make trade
-            member private this.PlaceOrder(order : Order) = portfolio.AddPosition(order)
+            member private this.PlaceOrder (symbol, date, quantity, price, orderType) = 
+             let orderRecord = 
+              match orderType with
+              | Long -> { Symbol = symbol; 
+                          Date = date;
+                          Quantity = quantity;
+                          OrderType = Long;
+                          Value = (decimal quantity) * price; }
+              | Short -> { Symbol = symbol; 
+                           Date = date;
+                           Quantity = - quantity;
+                           OrderType = Short;
+                           Value = - (decimal quantity) * price; }
+              | Cover -> { Symbol = symbol; 
+                           Date = date;
+                           Quantity = quantity;
+                           OrderType = Cover;
+                           Value = - (decimal quantity) * price; }
+             
+             portfolio.AddPosition orderRecord
             
-            /// Close position
-            member private this.CloseShortPosition(order) = portfolio.CloseShortPositions(order)
+            // Sets the value of short to positive as  to represent the gained profit.
+            member private this.ClosedShortOrder shortOrder = portfolio.CloseShortPositions shortOrder
             
             /// The algorithm
-            member private this.IncomingTick(tick : Tick) = 
+            member private this.IncomingTick (tick : Tick) = 
                 let currentPrice = tick.Low
+                
                 // Update portfolio with latest price information.
                 portfolio.CurrentPrice <- currentPrice
+                
                 /// Limit the exposure on open positions.
                 let maxlimit = portfolio.Cash + 0.1M
-                let minlimit = -abs (portfolio.Cash * 0.9M)
+                let minlimit = - (portfolio.Cash * 0.9M)
                 let calcVwap = volumeWeightedAvgPrice prices 3.0
+                
                 /// Shares limit to buy/sell
 //                let numOfShares = floor (portfolio.Cash / currentPrice)
                 let numOfShares = 100M
 
+                // SHORT
                 /// if the stocks price less than the vwap by 0.5% and the limit has not been exceeded.
                 if currentPrice < (calcVwap * 0.995M) && (portfolio.ShortPositionsValue > minlimit) then 
-                    let order = 
-                        { Symbol = symbol
-                          Quantity = -int numOfShares
-                          OrderType = Short
-                          Value = -numOfShares * currentPrice
-                          Covered = false }
-                    this.PlaceOrder(order)
+                 this.PlaceOrder(symbol, tick.Date, numOfShares, currentPrice, Short)
+                
+                /// LONG
                 /// if the stock price has increased by 0.1% to the vwap and we havent reached exposure limit then buy.
                 elif currentPrice > (calcVwap * 1.001M) && (portfolio.PositionsValue < maxlimit) then 
-                    let order = 
-                        { Symbol = symbol
-                          Quantity = +int numOfShares
-                          OrderType = Long
-                          Value = +numOfShares * currentPrice
-                          Covered = false }
-                    this.PlaceOrder(order)
+                 this.PlaceOrder(symbol, tick.Date, numOfShares, currentPrice, Long)
+
+                /// COVER
                 /// If there any shorts where the market value has risen close to the the initial shorting value 
                 /// then close the positions.
-                else 
-                    if not portfolio.ShortPositions.IsEmpty then 
-                        let shortsToClose = 
-                            portfolio.ShortPositions 
-                            // current price is greater than the short price by 1%.
-                            |> Seq.filter (fun x -> not x.Covered && abs (x.Value / decimal x.Quantity) > currentPrice * 0.99M)
-                        for short in shortsToClose do
-                            let order = 
-                                { Symbol = short.Symbol
-                                  Quantity = abs short.Quantity
-                                  OrderType = Cover
-                                  Value = - (decimal short.Quantity) * currentPrice
-                                  Covered = true }
-                            portfolio.CloseShortPositions(short, order)
-            
+                elif not portfolio.ShortPositions.IsEmpty then
+                 portfolio.ShortPositions 
+                 |> Seq.filter (fun x -> x.Value < 0M && abs (x.Value / decimal x.Quantity) > currentPrice * 0.99M)
+                 |> Seq.iter (fun (short) -> this.PlaceOrder(short.Symbol, tick.Date, (abs short.Quantity), currentPrice, Cover)
+                                             this.ClosedShortOrder(short))
+
             /// Backtest uses historical data to simulate returns.
-            member this.BackTest() = 
+            member this.BackTest () = 
                 printfn "Algorithm Started."
-                for tick in prices do
-                    let filterCrappyData data = 
-                        match data with
-                        | x when not (String.IsNullOrEmpty(tick.Date.ToString())) -> Some x
-                        | x when tick.High >= 1M && tick.Low >= 1M && tick.Close >= 1M && tick.Volume >= 1M -> Some x
-                        | _ -> None
-                    if (filterCrappyData tick).IsSome then 
-                        this.IncomingTick(tick)
-                    else printfn "Crappy data detected %A" tick
+                let filterCrappyData (tick:Tick) = 
+                      match tick with
+                      | x when not (String.IsNullOrEmpty(tick.Date.ToString())) && 
+                               tick.High >= 1M && 
+                               tick.Low >= 1M && 
+                               tick.Close >= 1M && 
+                               tick.Volume >= 1M
+                                -> true
+                      | _ -> false
+                prices
+                |> Seq.filter (fun tick -> filterCrappyData tick)
+                |> Seq.iter (fun tick -> this.IncomingTick(tick))
 
-                printfn "Shorted %A Shares" (portfolio.Positions
-                                             |> Seq.filter (fun x -> x.OrderType = Short)
-                                             |> Seq.sumBy (fun x -> x.Quantity))
+                let positionQuantity orderType = 
+                 portfolio.Positions 
+                 |> Seq.filter (fun x -> x.OrderType = orderType) 
+                 |> Seq.sumBy (fun x -> x.Quantity)
 
-                printfn "Covered %A Shorts" (portfolio.Positions
-                                             |> Seq.filter (fun x -> x.OrderType = Cover)
-                                             |> Seq.sumBy (fun x -> x.Quantity))
-
-                printfn "Bought (Long) %A Shares" (portfolio.Positions
-                                                   |> Seq.filter (fun x -> x.OrderType = Long)
-                                                   |> Seq.sumBy (fun x -> x.Quantity))
-
+                printfn "Shorted %A Shares" (positionQuantity Short)
+                printfn "Covered %A Shorts" (positionQuantity Cover)
+                printfn "Bought (Long) %A Shares" (positionQuantity Long)
                 printfn "%A" portfolio
-
                 printfn "Date Range %A to %A" prices.[0].Date prices.[prices.GetUpperBound(0)].Date
-                               
                 printfn "Algorithm Ended."
         end

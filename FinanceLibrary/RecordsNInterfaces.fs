@@ -33,13 +33,13 @@ type OrderType =
 
 type Order = 
     { Symbol : string
-      Quantity : int
+      Date: DateTime
+      Quantity : decimal
       OrderType : OrderType
-      Value : decimal
-      mutable Covered : bool }
+      mutable Value : decimal }
+
     override this.ToString() = 
-        sprintf "%A, %A, %A, %A, %A" this.Symbol this.Quantity this.OrderType 
-            this.Value this.Covered
+        sprintf "%A, %A, %A, %A" this.Symbol this.Quantity this.OrderType this.Value
 
 type IStockService = 
     abstract GetStockPrices : string -> int -> Tick []
