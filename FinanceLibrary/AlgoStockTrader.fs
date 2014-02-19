@@ -12,6 +12,7 @@ module MomentumVWAP =
     open System
     open Microsoft.FSharp.Collections
     open FinanceLibrary
+    open FinanceLibrary.Records
     open YahooFinanceAPI.Stock
     open AlgorithmicTrading.AlgoPortfolio
     open DatabaseLayer

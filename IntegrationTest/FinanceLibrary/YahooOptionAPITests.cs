@@ -13,7 +13,7 @@ namespace Test.IntegrationTest.FinanceLibrary
         [TestCase("", false)]
         public void GetOptionData(string symbol, bool shouldPass)
         {
-            var service = new Option.GetOptionTableService() as IOptionService;
+            var service = new Option.GetOptionTableService() as Interfaces.IOptionService;
             var data = service.GetOptionTable(symbol);
             Assert.IsTrue(data.Any() == shouldPass);
         }

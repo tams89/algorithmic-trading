@@ -1,11 +1,10 @@
 ﻿namespace FinanceLibrary
 
-open FinanceLibrary
 open System
-open System.Data
 open System.Data.Linq
 open Microsoft.FSharp.Data.TypeProviders
-open Microsoft.FSharp.Linq
+open FinanceLibrary.Interfaces
+open FinanceLibrary.Records
 
 module DatabaseLayer = 
  
@@ -22,14 +21,13 @@ module DatabaseLayer =
                  where (row.Symbol = symbol && row.Date >= DateTime.Today.AddDays(float(-daysBack)))
                  sortBy row.Date
                  select row }
-
          |> Seq.map (fun x -> 
                 { Date = x.Date
                   Open = x.Open
                   High = x.High
                   Low = x.Low
                   Close = x.Close
-                  Volume = decimal x.Volume
+                  Volume = (decimal x.Volume)
                   AdjClose = 0M })
          |> Seq.toArray
 

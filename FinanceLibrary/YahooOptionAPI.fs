@@ -10,6 +10,8 @@ module Option =
     open System.Text.RegularExpressions
     open Microsoft.FSharp.Collections
     open FinanceLibrary
+    open FinanceLibrary.Records
+    open FinanceLibrary.Interfaces
     
     type GetOptionTableService() = 
         let makeUrlOptions ticker = 

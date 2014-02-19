@@ -8,13 +8,15 @@
 #r "FSharp.PowerPack"
 
 #load "RecordsNInterfaces.fs"
-#load "DatabaseLayer.fs"
+//#load "DatabaseLayer.fs"
 #load "YahooStockAPI.fs"
 #load "AlgoPortfolio.fs"
 #load "AlgoStockTrader.fs"
 
 open System
 open FinanceLibrary
+open FinanceLibrary.Records
+open FinanceLibrary.Interfaces
 open YahooFinanceAPI.Stock
 open AlgorithmicTrading.AlgoPortfolio
 open DatabaseLayer

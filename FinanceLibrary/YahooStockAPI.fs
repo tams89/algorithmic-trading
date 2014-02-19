@@ -4,6 +4,8 @@ module Stock =
     open System
     open System.Net
     open FinanceLibrary
+    open FinanceLibrary.Records
+    open FinanceLibrary.Interfaces
     
     type GetStockDataWeb() = 
         let url = "http://ichart.finance.yahoo.com/table.csv?s="

@@ -3,7 +3,7 @@
 module AlgoPortfolio =
 
  open System
- open FinanceLibrary
+ open FinanceLibrary.Records
 
  /// PORTFOLIO
  type Portfolio(startingCash:decimal, startDate:DateTime) = class
