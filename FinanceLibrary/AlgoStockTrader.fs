@@ -1,5 +1,4 @@
 ﻿namespace FinanceLibrary.AlgorithmicTrading
-
 (*
     Simple Momentum Algorithm
     1. Calulate the volume weighted average i.e. 3 days/5 days.
@@ -23,14 +22,14 @@ module MomentumVWAP =
             /// Calculated using mean high low close.
             let volumeWeightedAvgPrice (prices : Tick []) (period : float) = 
                 let ticksInPeriod = 
-                    /// get data within period relative to now.
-                    prices 
-                    |> Array.filter (fun x -> x.Date <= DateTime.Today.AddDays(-period) || x.Date >= DateTime.Today.AddDays(+period))
-                /// Sum price times volume per trade
-                (ticksInPeriod |> Array.sumBy (fun x -> ((x.High + x.Low + x.Close) / 3.0M) * x.Volume)) 
+                    prices /// Get data within period relative to now.
+                    |> Array.filter (fun x -> x.Date <= DateTime.Today.AddDays(-period) || 
+                                              x.Date >= DateTime.Today.AddDays(+period))
+                (ticksInPeriod /// Sum price times volume per trade
+                 |> Array.sumBy (fun x -> ((x.High + x.Low + x.Close) / 3.0M) * x.Volume))
                  / 
-                /// Sum volume over whole period
-                (ticksInPeriod |> Array.sumBy (fun x -> x.Volume))
+                (ticksInPeriod /// Sum volume over whole period
+                 |> Array.sumBy (fun x -> x.Volume))
             
             /// Place order / make trade
             member private this.PlaceOrder (symbol, date, quantity, price, orderType) = 
