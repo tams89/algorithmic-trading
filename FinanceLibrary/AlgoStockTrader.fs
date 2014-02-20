@@ -19,7 +19,7 @@ module MomentumVWAP =
     open DatabaseLayer
 
     let console x (item:string) value = 
-     printfn "Current of o%A is %A" item value
+     printfn "Current of %A is %A" item value
 
     /// TRADER
     type Trader (portfolio : Portfolio, logger : WriteIterationData, symbol : string, prices : Tick []) = class
