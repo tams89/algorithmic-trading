@@ -8,7 +8,8 @@ module AlgoPortfolio =
 
  /// PORTFOLIO
  type Portfolio(startingCash:decimal, startDate:DateTime) = class
-  let mutable positions : Order list = []
+  let positions = System.Collections.Generic.List<Order>()
+  let closedPositions = System.Collections.Generic.List<Order>()
   let mutable currentPrice = 0M
 
   /// The starting date of the portfolio.
@@ -22,23 +23,32 @@ module AlgoPortfolio =
    and set(value) = currentPrice <- value
 
   /// Current amount of available cash.
-  /// Sum of starting capital minus the positions as they were ordered (not the current value of the positions).
+  /// Sum of starting capital minus the positions as they were ordered/covered (not the current value of the positions).
   member this.Cash
-   with get() = startingCash - (positions |> PSeq.sumBy (fun x -> x.Value))
+   with get() = startingCash + (closedPositions |> Seq.sumBy (fun x -> abs x.Value))
   
   /// Total profit and loss up until the current time.
   member this.ProfitAndLoss
-   with get() = (this.Cash + this.PositionsValue) - startingCash
+   with get() = this.Cash + this.PositionsValue - startingCash
   
   /// List of all positions.
   member this.Positions
    with get() = positions
+
+  /// List of all closed positions.
+  member this.ClosedPositions
+   with get() = closedPositions
  
-  // Un-Covered Short positions.
+  /// Short positions.
   member this.ShortPositions
    with get() = positions 
-    |> PSeq.filter (fun x -> x.OrderType = Short && x.Value < 0M) 
-    |> PSeq.toList
+    |> Seq.filter (fun x -> x.OrderType = Short) 
+    |> Seq.toList
+
+  /// Long positions.
+  member this.LongPositions
+   with get() = positions 
+    |> Seq.filter (fun x -> x.OrderType = Long) 
 
   /// Total value of all open positions.
   member this.PositionsValue
@@ -46,15 +56,18 @@ module AlgoPortfolio =
     let positionValue (order:Order) = 
      match order.OrderType with 
      | Long -> decimal (order.Quantity * currentPrice)
-     | Short -> order.Value
-     | Cover -> order.Value
-    positions |> PSeq.sumBy (fun x -> positionValue x)
+     | _ -> order.Value
+    positions |> Seq.sumBy (fun x -> positionValue x)
 
   /// Value of all short positions.
+  /// http://fundmanagersoftware.com/help/short_positions.html
   member this.ShortPositionsValue
-   with get() = positions 
-    |> PSeq.filter (fun x -> x.OrderType = Short && x.Value < 0M) 
-    |> PSeq.sumBy (fun x -> x.Value)
+   with get() = this.ShortPositions 
+    |> Seq.sumBy (fun x -> x.Value)
+
+  member this.ClosedPositionsValue
+   with get() = closedPositions
+    |> Seq.sumBy (fun x -> x.Value)
 
   /// Sum of positionsValue and cash.
   member this.PortfolioValue 
@@ -64,33 +77,28 @@ module AlgoPortfolio =
   member this.Returns
    with get() = this.ProfitAndLoss / startingCash
 
-  // A new position / order.
-  member this.AddPosition(order) = ignore (order::positions)
-  
-  // Profit gained will be the initial short price say $100 * Quantity 
-  // minus the price they shares were bought back at say $75 * Quantity. 
-  // The short order has its value updated to be postive as that is the initial profit and 
-  // the covering orders value will be negative.
-  member this.CloseShortPositions(short:Order) = 
-   short.Value <- abs(short.Value)
+  /// A new position / order.
+  member this.AddPosition(order) = positions.Add(order)
 
+  member this.ClosePosition(order) = 
+   positions.Remove(order) |> ignore
+   closedPositions.Add(order)
+  
   override this.ToString() = 
    sprintf "Starting Cash %A, 
             Current Cash %A,
             Total Portfolio Value %A, 
-            Current Positions %A, 
-            Current Short Positions %A,
             Position Value %A,
             Short Position Value %A,
+            Closed Positions Value %A,
             Cumulative Returns %A, 
             Cumulative PnL %A" 
             this.StartingCash 
             this.Cash 
             this.PortfolioValue 
-            this.Positions.Length 
-            this.ShortPositions.Length 
             this.PositionsValue 
             this.ShortPositionsValue 
+            this.ClosedPositionsValue
             this.Returns 
             this.ProfitAndLoss 
  end  
