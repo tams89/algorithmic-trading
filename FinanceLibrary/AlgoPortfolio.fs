@@ -8,7 +8,7 @@ module AlgoPortfolio =
 
  /// PORTFOLIO
  type Portfolio(startingCash:decimal, startDate:DateTime) = class
-  let mutable positions : Order array = [||]
+  let mutable positions : Order list = []
   let mutable currentPrice = 0M
 
   /// The starting date of the portfolio.
@@ -24,7 +24,7 @@ module AlgoPortfolio =
   /// Current amount of available cash.
   /// Sum of starting capital minus the positions as they were ordered (not the current value of the positions).
   member this.Cash
-   with get() = startingCash - (Seq.sumBy (fun x -> x.Value) positions)
+   with get() = startingCash - (positions |> Seq.sumBy (fun x -> x.Value))
   
   /// Total profit and loss up until the current time.
   member this.ProfitAndLoss
@@ -45,7 +45,7 @@ module AlgoPortfolio =
    with get() = 
     let positionValue (order:Order) = 
      match order.OrderType with 
-     | Long -> decimal order.Quantity * currentPrice
+     | Long -> decimal (order.Quantity * currentPrice)
      | Short -> order.Value
      | Cover -> order.Value
     positions |> Seq.sumBy (fun x -> positionValue x)
@@ -65,14 +65,14 @@ module AlgoPortfolio =
    with get() = this.ProfitAndLoss / startingCash
 
   // A new position / order.
-  member this.AddPosition(order) = positions <- positions |> Array.append [| order |]
+  member this.AddPosition(order) = positions <- order::positions 
   
   // Profit gained will be the initial short price say $100 * Quantity 
   // minus the price they shares were bought back at say $75 * Quantity. 
   // The short order has its value updated to be postive as that is the initial profit and 
   // the covering orders value will be negative.
   member this.CloseShortPositions(short:Order) = 
-   short.Value <- abs short.Value
+   short.Value <- abs(short.Value)
 
   override this.ToString() = 
    sprintf "Starting Cash %A, 

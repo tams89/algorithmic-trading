@@ -42,23 +42,55 @@ module DatabaseLayer =
    db.DataContext.Log <- System.Console.Out
 
   /// Writes iteration data results to database.
-  member this.InsertIterationData (data : decimal*decimal*decimal*int*int*decimal*decimal*decimal*decimal*decimal*string) = 
-   let sc,cc,pv,cp,sp,psv,spv,r,pnl,cv,ct = data // data from tuple.
+  member this.InsertIterationData 
+   (data: decimal*decimal*decimal*int*int*decimal*decimal*decimal*decimal*decimal*string) = 
+   
+   // Make individual data accessible from tuple.
+   let sc,cc,pv,cp,sp,psv,spv,r,pnl,cv,ct = data
    
    // data formatted to SQL table.
-   let newData = new dbSchema.ServiceTypes.Portfolio_Iterations(IterationId = Guid.NewGuid(),
-                                                                StartingCash = sc,
-                                                                CurrentCash = cc,
-                                                                PortfolioValue = pv,
-                                                                CurrentPositions = cp,
-                                                                ShortPositions = sp,
-                                                                PositionValue = psv,
-                                                                ShortPositionValue = spv,
-                                                                Returns = r,
-                                                                ProfitAndLoss = pnl,
-                                                                ConstantValue = cv,
-                                                                ConstantType = ct)
+   let newData = 
+    new dbSchema.ServiceTypes.Portfolio_Iterations(
+     IterationId = Guid.NewGuid(),
+     StartingCash = sc,
+     CurrentCash = cc,
+     PortfolioValue = pv,
+     CurrentPositions = cp,
+     ShortPositions = sp,
+     PositionValue = psv,
+     ShortPositionValue = spv,
+     Returns = r,
+     ProfitAndLoss = pnl,
+     ConstantValue = cv,
+     ConstantType = ct)
+
    iterationTable.InsertOnSubmit(newData)
+
+
+  /// Writes iteration data results to database.
+  member this.InsertIterationData 
+   (data : System.Collections.Generic.IEnumerable<decimal*decimal*decimal*int*int*decimal*decimal*decimal*decimal*decimal*string>) = 
+   
+   let newData = 
+    [ for i in data ->
+       let sc,cc,pv,cp,sp,psv,spv,r,pnl,cv,ct = i
+       new dbSchema.ServiceTypes.Portfolio_Iterations(
+        IterationId = Guid.NewGuid(),
+        StartingCash = sc,
+        CurrentCash = cc,
+        PortfolioValue = pv,
+        CurrentPositions = cp,
+        ShortPositions = sp,
+        PositionValue = psv,
+        ShortPositionValue = spv,
+        Returns = r,
+        ProfitAndLoss = pnl,
+        ConstantValue = cv,
+        ConstantType = ct) ]
+
+   iterationTable.InsertAllOnSubmit(newData)
+
+  member this.Commit () = 
    try
     db.Portfolio_Iterations.Context.SubmitChanges()
    with

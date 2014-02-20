@@ -18,9 +18,9 @@ module MomentumVWAP =
     open AlgorithmicTrading.AlgoPortfolio
     open DatabaseLayer
 
+
     /// TRADER
-    type Trader (portfolio : Portfolio, logger : WriteIterationData, symbol : string, prices : Tick []) = 
-        class
+    type Trader (portfolio : Portfolio, logger : WriteIterationData, symbol : string, prices : Tick []) = class
 
             /// Calculated using mean high low close.
             let volumeWeightedAvgPrice (prices : Tick []) (period : float) = 
@@ -47,21 +47,21 @@ module MomentumVWAP =
                           Date = date;
                           Quantity = quantity;
                           OrderType = Long;
-                          Value = (decimal quantity) * price; }
+                          Value = decimal(quantity) * price; }
 
               | Short -> { Symbol = symbol; 
                            Date = date;
                            Quantity = - quantity;
                            OrderType = Short;
-                           Value = - (decimal quantity) * price; }
+                           Value = - decimal(quantity) * price; }
 
               | Cover -> { Symbol = symbol; 
                            Date = date;
                            Quantity = quantity;
                            OrderType = Cover;
-                           Value = - (decimal quantity) * price; }
+                           Value = - decimal(quantity) * price; }
              
-             portfolio.AddPosition orderRecord
+             portfolio.AddPosition(orderRecord)
 
             // Sets the value of short to positive as  to represent the gained profit.
             member private this.ClosedShortOrder shortOrder = portfolio.CloseShortPositions shortOrder
@@ -75,7 +75,7 @@ module MomentumVWAP =
                 
                 /// Limit the exposure on open positions.
                 let maxlimit = portfolio.Cash + 0.1M
-                let minlimit = - portfolio.Cash
+                let minlimit = - (abs portfolio.Cash)
                 let calcVwap = volumeWeightedAvgPrice prices 3.0
                 
                 /// Shares limit to buy/sell
@@ -96,9 +96,9 @@ module MomentumVWAP =
                 /// then close the positions.
                 elif not portfolio.ShortPositions.IsEmpty then
                  portfolio.ShortPositions 
-                 |> PSeq.filter (fun x -> x.Value < 0M && abs (x.Value / decimal x.Quantity) > currentPrice * 0.99M)
-                 |> PSeq.iter (fun (short) -> this.PlaceOrder(short.Symbol, tick.Date, (abs short.Quantity), currentPrice, Cover)
-                                              this.ClosedShortOrder(short))
+                 |> Seq.filter (fun x -> x.Value < 0M && abs (x.Value / decimal x.Quantity) > currentPrice * 0.99M)
+                 |> Seq.iter (fun (short) -> this.PlaceOrder(short.Symbol, tick.Date, (abs short.Quantity), currentPrice, Cover)
+                                             this.ClosedShortOrder(short))
 
                 /// COVER Daily
                 /// If there any shorts where the market value has risen close to the the initial shorting value 
@@ -112,8 +112,11 @@ module MomentumVWAP =
             /// Backtest uses historical data to simulate returns.
             member this.BackTest () = 
 
+                let logRecs = 
+                 new System.Collections.Generic.List<decimal*decimal*decimal*int*int*decimal*decimal*decimal*decimal*decimal*string>()
+
                 // Filter any useless or erroneous data.
-                let cleanPrices : Tick [] = 
+                let cleanPrices : Tick array = 
                  let limit = prices.GetUpperBound(0)
                  let rec tickArray array counter =
                   match prices.[counter] with 
@@ -125,52 +128,58 @@ module MomentumVWAP =
 
                 // Backtest execute block
                 let executeRun iterating = 
-                 
                  printfn "Algorithm Started."
+                 printfn "Short VWAP Percentage: %A" iterating
                  
                  // Execute trading algorithm on the historical data.
-//                 prices |> PSeq.ordered |> PSeq.iter (fun tick -> this.IncomingTick(tick, iterating))
                  cleanPrices |> Seq.iter (fun tick -> this.IncomingTick(tick, iterating))
-
-
-                 // Store the constant iterated over, and portfolio results.
-                 logger.InsertIterationData(portfolio.StartingCash,
-                                            portfolio.Cash,
-                                            portfolio.PortfolioValue, 
-                                            portfolio.Positions.Length, 
-                                            portfolio.ShortPositions.Length, 
-                                            portfolio.PositionsValue, 
-                                            portfolio.ShortPositionsValue, 
-                                            portfolio.Returns, 
-                                            portfolio.ProfitAndLoss, 
-                                            iterating, 
-                                            "ShortVWAPPercentage")
 
                  let positionQuantity orderType = 
                   portfolio.Positions 
-                  |> PSeq.filter (fun x -> x.OrderType = orderType) 
-                  |> PSeq.sumBy (fun x -> x.Quantity)
+                  |> Seq.filter (fun x -> x.OrderType = orderType) 
+                  |> Seq.sumBy (fun x -> x.Quantity)
                  printfn "Shorted %A Shares" (positionQuantity Short)
                  printfn "Covered %A Shorts" (positionQuantity Cover)
                  printfn "Bought (Long) %A Shares" (positionQuantity Long)
                  printfn "%A" portfolio
                  printfn "Date Range %A to %A" prices.[0].Date prices.[prices.GetUpperBound(0) - 1].Date
 
-                // Iterate constants
-                [ 0.6M..0.002M..1.0M ] 
-                |> PSeq.ordered
-                |> PSeq.iter executeRun
-                
-                printfn "Algorithm Ended."
+                 GC.Collect() // Force garbage collection
+                 portfolio
 
+                // Store the constant iterated over, and portfolio results.
+                let addToLog (portfolio:Portfolio) (iterateVal:decimal) (whatIterated:string)  =
+                 logRecs.Add(
+                  (portfolio.StartingCash,
+                   portfolio.Cash,
+                   portfolio.PortfolioValue, 
+                   portfolio.Positions.Length, 
+                   portfolio.ShortPositions.Length, 
+                   portfolio.PositionsValue, 
+                   portfolio.ShortPositionsValue, 
+                   portfolio.Returns, 
+                   portfolio.ProfitAndLoss, 
+                   iterateVal, 
+                   whatIterated))
+
+                // Iterate constants
+                [ 0.800M..0.005M..1.000M ] 
+                |> PSeq.ordered
+                |> PSeq.iter (fun x -> addToLog (executeRun x) x "ShortVwapPercent")
+
+                // Insert collection of log data to database.
+                logger.InsertIterationData(logRecs)
+                logger.Commit()
+
+                printfn "Algorithm Ended."
         end
 
     /// EXECUTION
     let execute = 
-     let stockService = new GetStockDataDB() :> IStockService
+     let stockService = new GetStockDataWeb() :> IStockService
      // Get historical stock prices for the symbol
      let symbol = "MSFT"
-     let backTestPeriod = 10000
+     let backTestPeriod = 600
      let prices = stockService.GetStockPrices symbol backTestPeriod
      let l = new WriteIterationData()
      let p = new Portfolio(10000M, DateTime.Today)
