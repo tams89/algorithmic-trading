@@ -18,6 +18,8 @@ module MomentumVWAP =
     open AlgorithmicTrading.AlgoPortfolio
     open DatabaseLayer
 
+    let console x (item:string) value = 
+     printfn "Current of o%A is %A" item value
 
     /// TRADER
     type Trader (portfolio : Portfolio, logger : WriteIterationData, symbol : string, prices : Tick []) = class
@@ -123,22 +125,10 @@ module MomentumVWAP =
                   | _ -> tickArray array (counter + 1)
                  tickArray Array.empty<Tick> 0
 
-                // Backtest execute block
-                let executeRun shortVwap longVwap coverBarrier minLimit maxLimit numShares = 
 
+                let executeRun shortVwap longVwap coverBarrier minLimit maxLimit numShares = 
                  // Execute trading algorithm on the historical data.
                  cleanPrices |> Seq.iter (fun tick -> this.IncomingTick(tick, shortVwap, longVwap, coverBarrier, minLimit, maxLimit, numShares))
-
-                 let positionQuantity orderType = 
-                  portfolio.Positions 
-                  |> PSeq.filter (fun x -> x.OrderType = orderType) 
-                  |> PSeq.sumBy (fun x -> x.Quantity)
-                 printfn "Shorted %A Shares" (positionQuantity Short)
-                 printfn "Covered %A Shorts" (positionQuantity Cover)
-                 printfn "Bought (Long) %A Shares" (positionQuantity Long)
-                 printfn "Date Range %A to %A" prices.[0].Date prices.[prices.GetUpperBound(0) - 1].Date
-                 printfn "%A" portfolio
-
                  GC.Collect() // Force garbage collection
                  portfolio
 
@@ -165,9 +155,9 @@ module MomentumVWAP =
                 let numOfShares = 100M                // Shares limit to buy/sell
 
                 // Iterate constants
-                [ 0.800M..0.005M..1.000M ] // shortVwap list to iterate
+                [ 0.000M..0.005M..2.000M ] // shortVwap list to iterate
                 |> PSeq.ordered
-                |> PSeq.iter (fun i -> addToLog (executeRun i longVwap coverBarrier minlimit maxlimit numOfShares) i  "ShortVwap")
+                |> PSeq.iter (fun i -> console (addToLog (executeRun i longVwap coverBarrier minlimit maxlimit numOfShares)) "ShortVwap" i)
 
                 // Insert collection of log data to database.
                 logger.InsertIterationData(logRecs)
