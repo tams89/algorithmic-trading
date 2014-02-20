@@ -8,7 +8,7 @@ module AlgoPortfolio =
 
  /// PORTFOLIO
  type Portfolio(startingCash:decimal, startDate:DateTime) = class
-  let mutable positions : Order list = []
+  let mutable positions : Order array = [||]
   let mutable currentPrice = 0M
 
   /// The starting date of the portfolio.
@@ -24,7 +24,7 @@ module AlgoPortfolio =
   /// Current amount of available cash.
   /// Sum of starting capital minus the positions as they were ordered (not the current value of the positions).
   member this.Cash
-   with get() = startingCash - (positions |> Seq.sumBy (fun x -> x.Value))
+   with get() = startingCash - (positions |> PSeq.sumBy (fun x -> x.Value))
   
   /// Total profit and loss up until the current time.
   member this.ProfitAndLoss
@@ -37,8 +37,8 @@ module AlgoPortfolio =
   // Un-Covered Short positions.
   member this.ShortPositions
    with get() = positions 
-    |> Seq.filter (fun x -> x.OrderType = Short && x.Value < 0M) 
-    |> Seq.toList
+    |> PSeq.filter (fun x -> x.OrderType = Short && x.Value < 0M) 
+    |> PSeq.toList
 
   /// Total value of all open positions.
   member this.PositionsValue
@@ -48,13 +48,13 @@ module AlgoPortfolio =
      | Long -> decimal (order.Quantity * currentPrice)
      | Short -> order.Value
      | Cover -> order.Value
-    positions |> Seq.sumBy (fun x -> positionValue x)
+    positions |> PSeq.sumBy (fun x -> positionValue x)
 
   /// Value of all short positions.
   member this.ShortPositionsValue
    with get() = positions 
-    |> Seq.filter (fun x -> x.OrderType = Short && x.Value < 0M) 
-    |> Seq.sumBy (fun x -> x.Value)
+    |> PSeq.filter (fun x -> x.OrderType = Short && x.Value < 0M) 
+    |> PSeq.sumBy (fun x -> x.Value)
 
   /// Sum of positionsValue and cash.
   member this.PortfolioValue 
@@ -65,7 +65,7 @@ module AlgoPortfolio =
    with get() = this.ProfitAndLoss / startingCash
 
   // A new position / order.
-  member this.AddPosition(order) = positions <- order::positions 
+  member this.AddPosition(order) = positions <- Array.append positions [| order |]
   
   // Profit gained will be the initial short price say $100 * Quantity 
   // minus the price they shares were bought back at say $75 * Quantity. 
@@ -83,13 +83,14 @@ module AlgoPortfolio =
             Position Value %A,
             Short Position Value %A,
             Cumulative Returns %A, 
-            Cumulative PnL %A " this.StartingCash 
-                                this.Cash 
-                                this.PortfolioValue 
-                                this.Positions.Length 
-                                this.ShortPositions.Length 
-                                this.PositionsValue 
-                                this.ShortPositionsValue 
-                                this.Returns 
-                                this.ProfitAndLoss 
+            Cumulative PnL %A " 
+            this.StartingCash 
+            this.Cash 
+            this.PortfolioValue 
+            this.Positions.Length 
+            this.ShortPositions.Length 
+            this.PositionsValue 
+            this.ShortPositionsValue 
+            this.Returns 
+            this.ProfitAndLoss 
  end  

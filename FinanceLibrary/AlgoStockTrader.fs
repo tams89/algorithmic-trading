@@ -38,11 +38,9 @@ module MomentumVWAP =
              vwap
             
             /// Place order / make trade
-            member private this.PlaceOrder (symbol, date, quantity, price, orderType) = 
+            member private this.PlaceOrder(symbol, date, quantity, price, orderType) = 
              let orderRecord = 
-
               match orderType with
-
               | Long -> { Symbol = symbol; 
                           Date = date;
                           Quantity = quantity;
@@ -64,39 +62,33 @@ module MomentumVWAP =
              portfolio.AddPosition(orderRecord)
 
             // Sets the value of short to positive as  to represent the gained profit.
-            member private this.ClosedShortOrder shortOrder = portfolio.CloseShortPositions shortOrder
+            member private this.ClosedShortOrder(shortOrder) = portfolio.CloseShortPositions(shortOrder)
             
-            /// The algorithm
-            member private this.IncomingTick (tick : Tick, iterating) = 
+            /// THE ALGORITHM
+            /// Cover barrier = 0.99M
+            member private this.IncomingTick(tick, shortVwap, longVwap, coverBarrier, minLimit, maxLimit, numShares) = 
 
                 // Update with latest price information.
                 let currentPrice = tick.Low
                 portfolio.CurrentPrice <- currentPrice
-                
-                /// Limit the exposure on open positions.
-                let maxlimit = portfolio.Cash + 0.1M
-                let minlimit = - (abs portfolio.Cash)
                 let calcVwap = volumeWeightedAvgPrice prices 3.0
                 
-                /// Shares limit to buy/sell
-                let numOfShares = 100M
-
                 // SHORT
                 /// if the stocks price less than the vwap by 0.5% and the limit has not been exceeded.
-                if currentPrice < (calcVwap * iterating) && (portfolio.PositionsValue > minlimit) then 
-                 this.PlaceOrder(symbol, tick.Date, numOfShares, currentPrice, Short)
+                if currentPrice < (calcVwap * shortVwap) && (portfolio.PositionsValue > minLimit) then 
+                 this.PlaceOrder(symbol, tick.Date, numShares, currentPrice, Short)
                 
                 /// LONG
                 /// if the stock price has increased by 0.1% to the vwap and we havent reached exposure limit then buy.
-                elif currentPrice > (calcVwap * 1.001M) && (portfolio.PositionsValue < maxlimit) then 
-                 this.PlaceOrder(symbol, tick.Date, numOfShares, currentPrice, Long)
+                elif currentPrice > (calcVwap * longVwap) && (portfolio.PositionsValue < maxLimit) then 
+                 this.PlaceOrder(symbol, tick.Date, numShares, currentPrice, Long)
 
                 /// COVER
                 /// If there any shorts where the market value has risen close to the the initial shorting value 
                 /// then close the positions.
                 elif not portfolio.ShortPositions.IsEmpty then
                  portfolio.ShortPositions 
-                 |> Seq.filter (fun x -> x.Value < 0M && abs (x.Value / decimal x.Quantity) > currentPrice * 0.99M)
+                 |> Seq.filter (fun x -> x.Value < 0M && abs (x.Value / decimal x.Quantity) > currentPrice * coverBarrier)
                  |> Seq.iter (fun (short) -> this.PlaceOrder(short.Symbol, tick.Date, (abs short.Quantity), currentPrice, Cover)
                                              this.ClosedShortOrder(short))
 
@@ -109,8 +101,9 @@ module MomentumVWAP =
                  |> Seq.iter (fun (short) -> this.PlaceOrder(short.Symbol, tick.Date, (abs short.Quantity), currentPrice, Cover)
                                              this.ClosedShortOrder(short))
 
-            /// Backtest uses historical data to simulate returns.
+            /// Backtest using historical data to simulate returns.
             member this.BackTest () = 
+                printfn "Algorithm Started."
 
                 let logRecs = 
                  new System.Collections.Generic.List<decimal*decimal*decimal*int*int*decimal*decimal*decimal*decimal*decimal*string>()
@@ -127,12 +120,10 @@ module MomentumVWAP =
                  tickArray Array.empty<Tick> 0
 
                 // Backtest execute block
-                let executeRun iterating = 
-                 printfn "Algorithm Started."
-                 printfn "Short VWAP Percentage: %A" iterating
-                 
+                let executeRun shortVwap longVwap coverBarrier minLimit maxLimit numShares = 
+
                  // Execute trading algorithm on the historical data.
-                 cleanPrices |> Seq.iter (fun tick -> this.IncomingTick(tick, iterating))
+                 cleanPrices |> Seq.iter (fun tick -> this.IncomingTick(tick, shortVwap, longVwap, coverBarrier, minLimit, maxLimit, numShares))
 
                  let positionQuantity orderType = 
                   portfolio.Positions 
@@ -162,10 +153,17 @@ module MomentumVWAP =
                    iterateVal, 
                    whatIterated))
 
+                let shortVwap = 0.998M   // percentage of vwap to allow short position.
+                let longVwap = 1.001M    // percentage of vwap to allow long position.
+                let coverBarrier = 0.99M // percentage of current price to begin covering at.
+                let minlimit = - (abs portfolio.Cash) // must be negative, used for short positions.
+                let maxlimit = portfolio.Cash + 0.1M  // must be postive, used for long positions.
+                let numOfShares = 100M /// Shares limit to buy/sell
+
                 // Iterate constants
-                [ 0.800M..0.005M..1.000M ] 
+                [ 0.800M..0.005M..1.000M ] // shortVwap list to iterate
                 |> PSeq.ordered
-                |> PSeq.iter (fun x -> addToLog (executeRun x) x "ShortVwapPercent")
+                |> PSeq.iter (fun i -> addToLog (executeRun i longVwap coverBarrier minlimit maxlimit numOfShares) i  "ShortVwap")
 
                 // Insert collection of log data to database.
                 logger.InsertIterationData(logRecs)
