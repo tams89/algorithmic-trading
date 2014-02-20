@@ -18,8 +18,8 @@ module MomentumVWAP =
     open AlgorithmicTrading.AlgoPortfolio
     open DatabaseLayer
 
-    let console x (item:string) value = 
-     printfn "Current of %A is %A" item value
+    let console (item,value) = 
+     printfn "Current of o%A is %A" item value
 
     /// TRADER
     type Trader (portfolio : Portfolio, logger : WriteIterationData, symbol : string, prices : Tick []) = class
@@ -146,7 +146,8 @@ module MomentumVWAP =
                    portfolio.ProfitAndLoss, 
                    iterateVal, 
                    whatIterated))
-
+                 (whatIterated,iterateVal)
+                
                 let shortVwap = 0.998M                // percentage of vwap to allow short position.
                 let longVwap = 1.001M                 // percentage of vwap to allow long position.
                 let coverBarrier = 0.99M              // percentage of current price to begin covering at.
@@ -157,7 +158,7 @@ module MomentumVWAP =
                 // Iterate constants
                 [ 0.000M..0.005M..2.000M ] // shortVwap list to iterate
                 |> PSeq.ordered
-                |> PSeq.iter (fun i -> console (addToLog (executeRun i longVwap coverBarrier minlimit maxlimit numOfShares)) "ShortVwap" i)
+                |> PSeq.iter (fun i -> console (addToLog (executeRun i longVwap coverBarrier minlimit maxlimit numOfShares) i "ShortVwap"))
 
                 // Insert collection of log data to database.
                 logger.InsertIterationData(logRecs)
