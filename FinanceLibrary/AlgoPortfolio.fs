@@ -38,6 +38,11 @@ module AlgoPortfolio =
   /// List of all closed positions.
   member this.ClosedPositions
    with get() = closedPositions
+
+  /// Long positions.
+  member this.LongPositions
+   with get() = positions 
+    |> Seq.filter (fun x -> x.OrderType = Long) 
  
   /// Short positions.
   member this.ShortPositions
@@ -45,17 +50,18 @@ module AlgoPortfolio =
     |> Seq.filter (fun x -> x.OrderType = Short) 
     |> Seq.toList
 
-  /// Long positions.
-  member this.LongPositions
-   with get() = positions 
-    |> Seq.filter (fun x -> x.OrderType = Long) 
+  /// Closed Short Positions
+  member this.ClosedShortPositions
+   with get() = this.ClosedPositions
+    |> Seq.filter (fun x -> x.OrderType = Short)
+    |> Seq.toList
 
   /// Total value of all open positions.
   member this.PositionsValue
    with get() = 
     let positionValue (order:Order) = 
      match order.OrderType with 
-     | Long -> decimal (order.Quantity * currentPrice)
+     | Long -> order.Quantity * currentPrice
      | _ -> order.Value
     positions |> Seq.sumBy (fun x -> positionValue x)
 
@@ -64,8 +70,14 @@ module AlgoPortfolio =
   member this.ShortPositionsValue
    with get() = this.ShortPositions 
     |> Seq.sumBy (fun x -> x.Value)
-
+  
+  /// Value of all closed positions.
   member this.ClosedPositionsValue
+   with get() = closedPositions
+    |> Seq.sumBy (fun x -> x.Value)
+  
+  /// Value of all closed short positions.
+  member this.ClosedShortPositionsValue
    with get() = closedPositions
     |> Seq.sumBy (fun x -> x.Value)
 
@@ -80,25 +92,29 @@ module AlgoPortfolio =
   /// A new position / order.
   member this.AddPosition(order) = positions.Add(order)
 
+  /// Close a position. Removes it from positions and places it in the closed
+  /// positions collection.
   member this.ClosePosition(order) = 
    positions.Remove(order) |> ignore
    closedPositions.Add(order)
   
   override this.ToString() = 
-   sprintf "Starting Cash %A, 
-            Current Cash %A,
-            Total Portfolio Value %A, 
-            Position Value %A,
-            Short Position Value %A,
-            Closed Positions Value %A,
-            Cumulative Returns %A, 
+   sprintf "Starting Cash %A
+            Current Cash %A
+            Total Portfolio Value %A
+            Position Value %A
+            Short Position Value %A
+            Closed Positions Value %A
+            Closed Short Positions Value %A
+            Cumulative Returns %A
             Cumulative PnL %A" 
-            this.StartingCash 
-            this.Cash 
-            this.PortfolioValue 
-            this.PositionsValue 
+            this.StartingCash
+            this.Cash
+            this.PortfolioValue
+            this.PositionsValue
             this.ShortPositionsValue 
             this.ClosedPositionsValue
-            this.Returns 
-            this.ProfitAndLoss 
- end  
+            this.ClosedShortPositionsValue
+            this.Returns
+            this.ProfitAndLoss
+ end

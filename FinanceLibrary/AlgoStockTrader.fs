@@ -111,7 +111,7 @@ module MomentumVWAP =
                 printfn "Algorithm Started."
 
                 let logRecs = 
-                 new System.Collections.Generic.List<decimal*decimal*decimal*int*int*decimal*decimal*decimal*decimal*decimal*string>()
+                 new System.Collections.Generic.List<decimal*decimal*decimal*int*int*int*int*decimal*decimal*decimal*decimal*decimal*decimal*decimal*string>()
 
                 // Filter any useless or erroneous data.
                 let cleanPrices = 
@@ -137,8 +137,12 @@ module MomentumVWAP =
                    portfolio.PortfolioValue, 
                    portfolio.Positions.Count, 
                    portfolio.ShortPositions.Length, 
+                   portfolio.ClosedPositions.Count,
+                   portfolio.ClosedShortPositions.Length,
                    portfolio.PositionsValue, 
                    portfolio.ShortPositionsValue, 
+                   portfolio.ClosedPositionsValue, 
+                   portfolio.ClosedShortPositionsValue, 
                    portfolio.Returns, 
                    portfolio.ProfitAndLoss, 
                    iterateVal, 

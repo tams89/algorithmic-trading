@@ -43,10 +43,10 @@ module DatabaseLayer =
 
   /// Writes iteration data results to database.
   member this.InsertIterationData 
-   (data: decimal*decimal*decimal*int*int*decimal*decimal*decimal*decimal*decimal*string) = 
+   (data: decimal*decimal*decimal*int*int*int*int*decimal*decimal*decimal*decimal*decimal*decimal*decimal*string) = 
    
    // Make individual data accessible from tuple.
-   let sc,cc,pv,cp,sp,psv,spv,r,pnl,cv,ct = data
+   let sc,cc,pv,cp,sp,clp,clsp,psv,spv,cpv,clspv,r,pnl,cv,ct = data
    
    // data formatted to SQL table.
    let newData = 
@@ -57,8 +57,12 @@ module DatabaseLayer =
      PortfolioValue = pv,
      CurrentPositions = cp,
      ShortPositions = sp,
+     ClosedPositions = clp,
+     ClosedShortPositions = clsp,
      PositionValue = psv,
      ShortPositionValue = spv,
+     ClosedPositionValue = cpv,
+     ClosedShortPositionValue = clspv,
      Returns = r,
      ProfitAndLoss = pnl,
      ConstantValue = cv,
@@ -66,14 +70,13 @@ module DatabaseLayer =
 
    iterationTable.InsertOnSubmit(newData)
 
-
   /// Writes iteration data results to database.
   member this.InsertIterationData 
-   (data : System.Collections.Generic.IEnumerable<decimal*decimal*decimal*int*int*decimal*decimal*decimal*decimal*decimal*string>) = 
+   (data : System.Collections.Generic.IEnumerable<decimal*decimal*decimal*int*int*int*int*decimal*decimal*decimal*decimal*decimal*decimal*decimal*string>) = 
    
    let newData = 
     [ for i in data ->
-       let sc,cc,pv,cp,sp,psv,spv,r,pnl,cv,ct = i
+       let sc,cc,pv,cp,sp,clp,clsp,psv,spv,cpv,clspv,r,pnl,cv,ct = i
        new dbSchema.ServiceTypes.Portfolio_Iterations(
         IterationId = Guid.NewGuid(),
         StartingCash = sc,
@@ -81,8 +84,12 @@ module DatabaseLayer =
         PortfolioValue = pv,
         CurrentPositions = cp,
         ShortPositions = sp,
+        ClosedPositions = clp,
+        ClosedShortPositions = clsp,
         PositionValue = psv,
         ShortPositionValue = spv,
+        ClosedPositionValue = cpv,
+        ClosedShortPositionValue = clspv,
         Returns = r,
         ProfitAndLoss = pnl,
         ConstantValue = cv,
