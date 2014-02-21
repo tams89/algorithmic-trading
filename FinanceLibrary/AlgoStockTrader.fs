@@ -91,7 +91,7 @@ module MomentumVWAP =
                 /// COVER
                 /// If there any shorts where the market value has risen close to the the initial shorting value 
                 /// then close the positions.
-                elif not portfolio.ShortPositions.IsEmpty then
+                elif not (portfolio.ShortPositions |> Seq.isEmpty) then
                  portfolio.ShortPositions 
                  |> Seq.filter (fun x -> x.Value < 0M && abs (x.Value / decimal x.Quantity) > currentPrice * coverBarrier)
                  |> Seq.iter (fun (short) -> this.PlaceOrder(short.Symbol, tick.Date, (abs short.Quantity), currentPrice, Cover)
@@ -100,7 +100,7 @@ module MomentumVWAP =
                 /// COVER Daily
                 /// If there any shorts where the market value has risen close to the the initial shorting value 
                 /// then close the positions.
-                elif not portfolio.ShortPositions.IsEmpty then
+                elif not (portfolio.ShortPositions |> Seq.isEmpty) then
                  portfolio.ShortPositions 
                  |> Seq.filter (fun x -> tick.Date > x.Date.AddDays(5.0))
                  |> Seq.iter (fun (short) -> this.PlaceOrder(short.Symbol, tick.Date, (abs short.Quantity), currentPrice, Cover)
@@ -136,9 +136,9 @@ module MomentumVWAP =
                    portfolio.Cash,
                    portfolio.PortfolioValue, 
                    portfolio.Positions.Count, 
-                   portfolio.ShortPositions.Length, 
+                   portfolio.ShortPositions |> Seq.length, 
                    portfolio.ClosedPositions.Count,
-                   portfolio.ClosedShortPositions.Length,
+                   portfolio.ClosedShortPositions |> Seq.length,
                    portfolio.PositionsValue, 
                    portfolio.ShortPositionsValue, 
                    portfolio.ClosedPositionsValue, 
@@ -159,7 +159,8 @@ module MomentumVWAP =
 
                 // Iterate constants
                 [ 0.000M..0.005M..2.000M ] // shortVwap list to iterate
-                |> Seq.iter (fun i -> 
+                |> PSeq.ordered
+                |> PSeq.iter (fun i -> 
                     ((executeRun i longVwap coverBarrier minlimit maxlimit numOfShares vwapPeriod), i, "ShortVwap") 
                     |> addToLog 
                     |> console)
@@ -176,7 +177,7 @@ module MomentumVWAP =
      let stockService = new GetStockDataWeb() :> IStockService
      // Get historical stock prices for the symbol
      let symbol = "MSFT"
-     let backTestPeriod = 600
+     let backTestPeriod = 3000
      let prices = stockService.GetStockPrices symbol backTestPeriod
      let l = new WriteIterationData()
      let p = new Portfolio(10000M, DateTime.Today)

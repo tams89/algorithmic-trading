@@ -48,13 +48,11 @@ module AlgoPortfolio =
   member this.ShortPositions
    with get() = positions 
     |> Seq.filter (fun x -> x.OrderType = Short) 
-    |> Seq.toList
 
   /// Closed Short Positions
   member this.ClosedShortPositions
    with get() = this.ClosedPositions
     |> Seq.filter (fun x -> x.OrderType = Short)
-    |> Seq.toList
 
   /// Total value of all open positions.
   member this.PositionsValue
