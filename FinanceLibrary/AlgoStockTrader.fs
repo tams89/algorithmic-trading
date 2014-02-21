@@ -26,19 +26,19 @@ module AlgoTrader =
                    Date = date;
                    Quantity = quantity;
                    OrderType = Long;
-                   Value = decimal(quantity) * price; }
+                   Value = quantity * price; }
 
        | Short -> { Symbol = symbol; 
                     Date = date;
                     Quantity = - quantity;
                     OrderType = Short;
-                    Value = - decimal(quantity) * price; }
+                    Value = - quantity * price; }
 
        | Cover -> { Symbol = symbol; 
                     Date = date;
                     Quantity = quantity;
                     OrderType = Cover;
-                    Value = - decimal(quantity) * price; }
+                    Value = - quantity * price; }
       
       portfolio.AddPosition(orderRecord)
 
@@ -75,7 +75,7 @@ module AlgoTrader =
          /// then close the positions.
          elif not (portfolio.ShortPositions |> Seq.isEmpty) then
           portfolio.ShortPositions 
-          |> Seq.filter (fun x -> tick.Date > x.Date.AddDays(coverAfter))
+          |> Seq.filter (fun x -> x.Date.AddDays(coverAfter) > tick.Date)
           |> Seq.iter (fun (short) -> this.PlaceOrder(short.Symbol, tick.Date, (abs short.Quantity), currentPrice, Cover)
                                       this.PlaceCoverOrder(short))
     end
