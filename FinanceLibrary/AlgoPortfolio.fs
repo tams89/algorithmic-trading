@@ -9,8 +9,8 @@ module AlgoPortfolio =
 
  /// PORTFOLIO
  type Portfolio(startingCash:decimal, startDate:DateTime) = class
-  let positions = new System.Collections.Concurrent.ConcurrentBag<Order>()
-  let closedPositions = new System.Collections.Concurrent.ConcurrentBag<Order>()
+  let positions = new System.Collections.Concurrent.BlockingCollection<Order>()
+  let closedPositions = new System.Collections.Concurrent.BlockingCollection<Order>()
 
   let mutable currentPrice = 0M
 
@@ -36,30 +36,25 @@ module AlgoPortfolio =
   /// List of all positions.
   member this.Positions
    with get() = positions
-    |> Seq.toArray
 
   /// List of all closed positions.
   member this.ClosedPositions
    with get() = closedPositions
-    |> Seq.toArray
 
   /// Long positions.
   member this.LongPositions
    with get() = this.Positions
     |> Seq.filter (fun x -> x.OrderType = Long) 
-    |> Seq.toArray
  
   /// Short positions.
   member this.ShortPositions
    with get() = this.Positions 
     |> Seq.filter (fun x -> x.OrderType = Short) 
-    |> Seq.toArray
 
   /// Closed Short Positions
   member this.ClosedShortPositions
    with get() = this.ClosedPositions
     |> Seq.filter (fun x -> x.OrderType = Short)
-    |> Seq.toArray
 
   /// Total value of all open positions.
   member this.PositionsValue
@@ -79,12 +74,12 @@ module AlgoPortfolio =
   /// Value of all closed positions.
   member this.ClosedPositionsValue
    with get() = this.ClosedPositions
-    |> Seq.sumBy (fun x -> x.Value)
+    |> Seq.sumBy (fun x -> abs x.Value)
   
   /// Value of all closed short positions.
   member this.ClosedShortPositionsValue
    with get() = this.ClosedPositions
-    |> Seq.sumBy (fun x -> x.Value)
+    |> Seq.sumBy (fun x -> abs x.Value)
 
   /// Sum of positionsValue and cash.
   member this.PortfolioValue 
@@ -100,7 +95,7 @@ module AlgoPortfolio =
   /// Close a position. Removes it from positions and places it in the closed
   /// positions collection.
   member this.ClosePosition(order : Order) = 
-   positions.TryTake(ref order) |> ignore
+   positions.TryTake(ref order, -1) |> ignore
    closedPositions.Add(order)
   
   override this.ToString() = 
