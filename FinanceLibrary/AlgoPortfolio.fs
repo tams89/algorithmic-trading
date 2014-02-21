@@ -25,12 +25,7 @@ module AlgoPortfolio =
   /// Current amount of available cash.
   /// Sum of starting capital minus the positions as they were ordered/covered (not the current value of the positions).
   member this.Cash
-   with get() = 
-    let closedPositionValue (order:Order) = 
-     match order.OrderType with 
-     | Cover -> order.Value // should be negative always.
-     | _ -> abs(order.Value) // should always be positive
-    (closedPositions |> Seq.sumBy (fun x -> closedPositionValue x)) + startingCash
+   with get() = startingCash + this.ClosedPositionsValue
   
   /// Total profit and loss up until the current time.
   member this.ProfitAndLoss
@@ -76,13 +71,17 @@ module AlgoPortfolio =
   
   /// Value of all closed positions.
   member this.ClosedPositionsValue
-   with get() = this.ClosedPositions
-    |> Seq.sumBy (fun x -> x.Value)
+   with get() = 
+    let closedPositionValue (order:Order) = 
+     match order.OrderType with 
+     | Cover -> order.Value // should be negative always.
+     | _ -> abs(order.Value) // should always be positive
+    (this.ClosedPositions |> Seq.sumBy (fun x -> closedPositionValue x))
   
   /// Value of all closed short positions.
   member this.ClosedShortPositionsValue
    with get() = this.ClosedPositions
-    |> Seq.sumBy (fun x -> x.Value)
+    |> Seq.sumBy (fun x -> abs x.Value)
 
   /// Sum of positionsValue and cash.
   member this.PortfolioValue 

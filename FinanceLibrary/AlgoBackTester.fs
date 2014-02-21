@@ -38,29 +38,34 @@ module AlgoBackTester =
   let logger = new WriteIterationData()                                        // Database logging service.
   let stockService = new GetStockDataWeb() :> IStockService                    // Historical data service.
   let prices = cleanPrices (stockService.GetStockPrices symbol backTestPeriod) // Obtain historical data.
-
-  // Instantiate system components.
-  let startingCash = 10000M     
-  let startDate = DateTime.Today
-  let portfolio = new Portfolio(startingCash, startDate)
-  let trader = new Trader(symbol, portfolio)
-  let finCalc = new Calculation(prices)
-
-  // ALGORITHM VARIABLES.
-  let shortVwap = i                     // percentage of vwap to allow short position. ITERATING
-  let longVwap = 1.001M                 // percentage of vwap to allow long position.
-  let coverBarrier = 0.99M              // percentage of current price to begin covering at.
-  let minLimit = - (abs portfolio.Cash) // must be negative, used for short positions.
-  let maxLimit = portfolio.Cash + 0.1M  // must be postive, used for long positions.
-  let numOfShares = 100M                // Shares limit to buy/sell.
-  let coverAfter = 1.0                  // Days to cover any open shorts after.
-  let vwapPeriod =  5.0                 // Period of days to use to calculate vwap.
-  let vwap = finCalc.VWAP(vwapPeriod)   // Volume Weighted Average Price calculated from cleaned prices.
   
   let executeRun i = 
+   
+   let startingCash = 10000M      // Portfolio starting capital.
+   let startDate = DateTime.Today // Portfolio creation date. 
+
+   // Instantiate system components.
+   let portfolio = new Portfolio(startingCash, startDate)
+   let trader = new Trader(symbol, portfolio)
+   let finCalc = new Calculation(prices)
+
+                                         // ALGORITHM VARIABLES.
+   let shortVwap = 1.8250M               // percentage of vwap to allow short position.
+   let longVwap = i                      // percentage of vwap to allow long position. (default = 1.001M)
+   let coverBarrier = 0.99M              // percentage of current price to begin covering at.
+   let minLimit = - (abs portfolio.Cash) // must be negative, used for short positions.
+   let maxLimit = portfolio.Cash + 0.1M  // must be postive, used for long positions.
+   let numOfShares = 100M                // Shares limit to buy/sell.
+   let coverAfter = 5.0                  // Days to cover any open shorts after.
+   let vwapPeriod =  5.0                 // Period of days to use to calculate vwap.
+   let vwap = finCalc.VWAP(vwapPeriod)   // Volume Weighted Average Price calculated from cleaned prices.
+
+   // Execute trading algorithm on the historical data.
    prices |> Seq.iter (fun tick -> 
     trader.IncomingTick(tick, shortVwap, longVwap, coverBarrier, minLimit, maxLimit, numOfShares, coverAfter, vwap))
-   portfolio // Return the portfolio on market close / simulation over.
+ 
+   // Return the portfolio on market close / simulation over.
+   portfolio
   
   // Store the constant iterated over, and portfolio results.
   let addToLog (portfolio:Portfolio, iterateVal:decimal, whatIterated:string)  =
@@ -83,12 +88,12 @@ module AlgoBackTester =
    (whatIterated,iterateVal)
   
   // Iterate variable to determine best value.
-  [ 0.000M..0.005M..2.000M ]
+  [ 0.000M..0.002M..2.000M ]
   |> PSeq.ordered
   |> PSeq.iter (fun i -> 
-   ((executeRun i), i, backTestPeriod.ToString() + " DaysBack " + " ShortVWAP " + " Cover after " + coverAfter.ToString()) 
-   |> addToLog 
-   |> console)
+      ((executeRun i), i, backTestPeriod.ToString() + " DaysBack" + " LongVWAP" + " CoverAfterFiveDay") 
+      |> addToLog 
+      |> console)
   
   // Insert collection of log data to database.
   logger.InsertIterationData(logRecs)
