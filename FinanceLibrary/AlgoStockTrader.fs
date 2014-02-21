@@ -123,7 +123,7 @@ module MomentumVWAP =
       let finCalc = new Calculation(prices)
 
                                             // ALGORITHM VARIABLES.
-      let shortVwap = 0.998M                // percentage of vwap to allow short position.
+      let shortVwap = i                     // percentage of vwap to allow short position. ITERATING
       let longVwap = 1.001M                 // percentage of vwap to allow long position.
       let coverBarrier = 0.99M              // percentage of current price to begin covering at.
       let minLimit = - (abs portfolio.Cash) // must be negative, used for short positions.
