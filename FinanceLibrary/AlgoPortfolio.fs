@@ -80,7 +80,7 @@ module AlgoPortfolio =
   
   /// Value of all closed short positions.
   member this.ClosedShortPositionsValue
-   with get() = this.ClosedPositions
+   with get() = this.ClosedShortPositions
     |> Seq.sumBy (fun x -> abs x.Value)
 
   /// Sum of positionsValue and cash.
