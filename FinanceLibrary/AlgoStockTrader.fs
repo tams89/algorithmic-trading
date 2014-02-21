@@ -14,9 +14,6 @@ module AlgoTrader =
     open Records
     open AlgorithmicTrading.AlgoPortfolio
     open AlgorithmicTrading.AlgoCalculation
-
-    let console (item,value) = 
-     printfn "Current of %A is %A" item value
     
     /// TRADER
     type Trader(symbol : string, portfolio : Portfolio) = class

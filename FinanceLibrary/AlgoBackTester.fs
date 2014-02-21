@@ -12,6 +12,9 @@ module AlgoBackTester =
  open AlgorithmicTrading.AlgoCalculation
  open AlgorithmicTrading.AlgoTrader
  open DatabaseLayer
+ 
+ let console (item,value) = 
+  printfn "Current of %A is %A" item value
 
  // Filter any useless or erroneous data.
  let cleanPrices (prices: Tick []) = 
@@ -31,7 +34,7 @@ module AlgoBackTester =
  
   // Set data variables.
   let symbol = "MSFT"                                                          // Get historical stock prices for the symbol.
-  let backTestPeriod = 600                                                     // Previous days worth of historical data to obtain.
+  let backTestPeriod = 3000                                                    // Previous days worth of historical data to obtain.
   let logger = new WriteIterationData()                                        // Database logging service.
   let stockService = new GetStockDataWeb() :> IStockService                    // Historical data service.
   let prices = cleanPrices (stockService.GetStockPrices symbol backTestPeriod) // Obtain historical data.
@@ -53,7 +56,7 @@ module AlgoBackTester =
    let minLimit = - (abs portfolio.Cash) // must be negative, used for short positions.
    let maxLimit = portfolio.Cash + 0.1M  // must be postive, used for long positions.
    let numOfShares = 100M                // Shares limit to buy/sell.
-   let coverAfter = 1.0                  // Days to cover any open shorts after.
+   let coverAfter = 5.0                  // Days to cover any open shorts after.
    let vwapPeriod =  5.0                 // Period of days to use to calculate vwap.
    let vwap = finCalc.VWAP(vwapPeriod)   // Volume Weighted Average Price calculated from cleaned prices.
 
@@ -86,7 +89,7 @@ module AlgoBackTester =
   // Iterate variable to determine best value.
   [ 0.000M..0.005M..2.000M ]
   |> PSeq.ordered
-  |> PSeq.iter (fun i -> ((executeRun i), i, "ShortVwap - Daily Close") |> addToLog |> console)
+  |> PSeq.iter (fun i -> ((executeRun i), i, "ShortVwap") |> addToLog |> console)
   
   // Insert collection of log data to database.
   logger.InsertIterationData(logRecs)
