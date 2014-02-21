@@ -29,7 +29,7 @@ module AlgoBackTester =
  
  /// Backtest using historical data to simulate returns.
  let backTest () = 
-  let logRecs = new System.Collections.Generic.List<Log*string*decimal>()
+  let logRecs = new System.Collections.Generic.List<Log*string*decimal*DateTime*DateTime>()
  
   // Set data variables.
   let symbol = "MSFT"                                                          // Get historical stock prices for the symbol.
@@ -48,14 +48,14 @@ module AlgoBackTester =
    let finCalc = new Calculation(prices)
 
    // ALGORITHM VARIABLES.
-   let shortVwap = 1.8250M               // percentage of vwap to allow short position.
-   let longVwap = i                      // percentage of vwap to allow long position. (default = 1.001M)
+   let shortVwap = 1.8250M               // percentage of vwap to allow short position. (defauly = 0.998M / 0.2% less than vwap)
+   let longVwap = i                      // percentage of vwap to allow long position. (default = 1.100M / 1% greater than vwap)
    let coverBarrier = 0.99M              // percentage of current price to begin covering at.
    let minLimit = - portfolio.Cash       // must be negative, used for short positions.
    let maxLimit = portfolio.Cash + 0.1M  // must be postive, used for long positions.
    let numOfShares = 100M                // Shares limit to buy/sell.
-   let coverAfter = 5.0                  // Days to cover any open shorts after.
-   let vwapPeriod =  5.0                 // Period of days to use to calculate vwap.
+   let coverAfter = 1.0                  // Days to cover any open shorts after.
+   let vwapPeriod = 35.0                 // Period of days to use to calculate vwap.
    let vwap = finCalc.VWAP(vwapPeriod)   // Volume Weighted Average Price calculated from cleaned prices.
 
    // Execute trading algorithm on the historical data.
@@ -64,7 +64,8 @@ module AlgoBackTester =
  
    // Return the portfolio on market close / simulation over.
    let variables = 
-    { BackTestPeriod = backTestPeriod; 
+    { Symbol = symbol
+      BackTestPeriod = backTestPeriod; 
       ShortVwap = shortVwap; 
       LongVwap = longVwap; 
       VwapPeriod = vwapPeriod; 
@@ -82,8 +83,8 @@ module AlgoBackTester =
    log
   
   // Store the constant iterated over, and portfolio results.
-  let addToLog (log : Log, iterationType:string, iterationValue:decimal)  =
-   logRecs.Add(log,iterationType,iterationValue)
+  let addToLog (log : Log, iterationType:string, iterationValue:decimal, startDate, endDate)  =
+   logRecs.Add(log,iterationType,iterationValue, startDate, endDate)
    (iterationType,iterationValue)
   
   // Iterate variable to determine best value.

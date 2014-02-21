@@ -16,9 +16,12 @@ module DatabaseLayer =
  type dbSchema = SqlDataConnection<"Data Source=.;Initial Catalog=AlgorithmicTrading;Integrated Security=True">
 
  let dataToIterationTable data = 
-  let log,ct,cv = data
+  let log,ct,cv,ds,ed = data
   let table = new dbSchema.ServiceTypes.Portfolio_Iterations()
   table.IterationId <- Guid.NewGuid()
+  table.Symbol <- log.Variables.Symbol
+  table.StartDate <- ds
+  table.EndDate <- ed
   table.StartingCash <- log.Portfolio.StartingCash 
   table.CurrentCash <- log.Portfolio.Cash 
   table.PortfolioValue <- log.Portfolio.PortfolioValue 
@@ -78,11 +81,11 @@ module DatabaseLayer =
    db.DataContext.Log <- System.Console.Out
 
   /// Writes iteration data results to database.
-  member this.InsertIterationData (data: Log*string*decimal) = 
+  member this.InsertIterationData (data: Log*string*decimal*DateTime*DateTime) = 
    iterationTable.InsertOnSubmit(dataToIterationTable data)
 
   /// Writes iteration data results to database.
-  member this.InsertIterationData (data : System.Collections.Generic.IEnumerable<Log*string*decimal>) = 
+  member this.InsertIterationData (data : System.Collections.Generic.IEnumerable<Log*string*decimal*DateTime*DateTime>) = 
    let newData = [ for i in data -> dataToIterationTable i ]
    iterationTable.InsertAllOnSubmit(newData)
 

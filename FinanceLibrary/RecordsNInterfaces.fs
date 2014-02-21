@@ -40,7 +40,8 @@ module Records =
      override this.ToString() = sprintf "%A, %A, %A, %A, %A" this.Symbol this.Date this.Quantity this.OrderType this.Value
 
  type Variables = 
-  { BackTestPeriod:int
+  { Symbol:string
+    BackTestPeriod:int
     ShortVwap:decimal
     LongVwap:decimal
     VwapPeriod: float
