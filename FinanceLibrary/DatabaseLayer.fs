@@ -15,6 +15,36 @@ module DatabaseLayer =
 
  type dbSchema = SqlDataConnection<"Data Source=.;Initial Catalog=AlgorithmicTrading;Integrated Security=True">
 
+ let dataToIterationTable data = 
+  let log,ct,cv = data
+  let table = new dbSchema.ServiceTypes.Portfolio_Iterations()
+  table.IterationId <- Guid.NewGuid()
+  table.StartingCash <- log.Portfolio.StartingCash 
+  table.CurrentCash <- log.Portfolio.Cash 
+  table.PortfolioValue <- log.Portfolio.PortfolioValue 
+  table.CurrentPositions <- log.Portfolio.Positions.Count 
+  table.ShortPositions <- (log.Portfolio.ShortPositions |> Seq.length) 
+  table.ClosedPositions <- log.Portfolio.ClosedPositions.Count 
+  table.ClosedShortPositions <- (log.Portfolio.ClosedShortPositions |> Seq.length) 
+  table.PositionValue <- log.Portfolio.PositionsValue 
+  table.ShortPositionValue <- log.Portfolio.ShortPositionsValue 
+  table.ClosedPositionValue <- log.Portfolio.ClosedPositionsValue 
+  table.ClosedShortPositionValue <- log.Portfolio.ClosedShortPositionsValue 
+  table.Returns <- log.Portfolio.Returns 
+  table.ProfitAndLoss <- log.Portfolio.ProfitAndLoss 
+  table.ShortVwap <- log.Variables.ShortVwap 
+  table.LongVwap <- log.Variables.LongVwap 
+  table.VwapPeriod <- log.Variables.VwapPeriod 
+  table.Vwap <- log.Variables.Vwap 
+  table.CoverBarrierPrice <- log.Variables.CoverBarrierPrice 
+  table.MinLimit <- log.Variables.MinLimit 
+  table.MaxLimit <- log.Variables.MaxLimit 
+  table.NumShares <- log.Variables.NumShares 
+  table.CoverAfterDays <- log.Variables.CoverAfterDays 
+  table.ConstantValue <- cv
+  table.ConstantType <- ct
+  table
+
  type GetStockDataDB() = 
      let db = dbSchema.GetDataContext()
      do 
@@ -38,7 +68,8 @@ module DatabaseLayer =
 
      interface IStockService with
          member this.GetStockPrices symbol daysBack = fetchData symbol daysBack
-
+ 
+ /// Allows writing of data to iteration table.
  type WriteIterationData () = 
   let db = dbSchema.GetDataContext()
   let iterationTable = db.Portfolio_Iterations
@@ -48,74 +79,14 @@ module DatabaseLayer =
 
   /// Writes iteration data results to database.
   member this.InsertIterationData (data: Log*string*decimal) = 
-   
-   // data formatted to SQL table.
-   let log,ct,cv = data
-   let newData = 
-    new dbSchema.ServiceTypes.Portfolio_Iterations(
-     IterationId = Guid.NewGuid(),
-     StartingCash = log.Portfolio.StartingCash,
-     CurrentCash = log.Portfolio.Cash,
-     PortfolioValue = log.Portfolio.PortfolioValue,
-     CurrentPositions = log.Portfolio.Positions.Count,
-     ShortPositions = (log.Portfolio.ShortPositions |> Seq.length),
-     ClosedPositions = log.Portfolio.ClosedPositions.Count,
-     ClosedShortPositions = (log.Portfolio.ClosedShortPositions |> Seq.length),
-     PositionValue = log.Portfolio.PositionsValue,
-     ShortPositionValue = log.Portfolio.ShortPositionsValue,
-     ClosedPositionValue = log.Portfolio.ClosedPositionsValue,
-     ClosedShortPositionValue = log.Portfolio.ClosedShortPositionsValue,
-     Returns = log.Portfolio.Returns,
-     ProfitAndLoss = log.Portfolio.ProfitAndLoss,
-     ShortVwap = log.Variables.ShortVwap,
-     LongVwap = log.Variables.LongVwap,
-     VwapPeriod = log.Variables.VwapPeriod,
-     Vwap = log.Variables.Vwap,
-     CoverBarrierPrice = log.Variables.CoverBarrierPrice,
-     MinLimit = log.Variables.MinLimit,
-     MaxLimit = log.Variables.MaxLimit,
-     NumShares = log.Variables.NumShares,
-     CoverAfterDays = log.Variables.CoverAfterDays,
-     ConstantValue = cv,
-     ConstantType = ct)
-
-   iterationTable.InsertOnSubmit(newData)
+   iterationTable.InsertOnSubmit(dataToIterationTable data)
 
   /// Writes iteration data results to database.
   member this.InsertIterationData (data : System.Collections.Generic.IEnumerable<Log*string*decimal>) = 
-
-   let newData = 
-    [ for i in data ->
-       let log,ct,cv = i
-       new dbSchema.ServiceTypes.Portfolio_Iterations(
-        IterationId = Guid.NewGuid(),
-        StartingCash = log.Portfolio.StartingCash,
-        CurrentCash = log.Portfolio.Cash,
-        PortfolioValue = log.Portfolio.PortfolioValue,
-        CurrentPositions = log.Portfolio.Positions.Count,
-        ShortPositions = (log.Portfolio.ShortPositions |> Seq.length),
-        ClosedPositions = log.Portfolio.ClosedPositions.Count,
-        ClosedShortPositions = (log.Portfolio.ClosedShortPositions |> Seq.length),
-        PositionValue = log.Portfolio.PositionsValue,
-        ShortPositionValue = log.Portfolio.ShortPositionsValue,
-        ClosedPositionValue = log.Portfolio.ClosedPositionsValue,
-        ClosedShortPositionValue = log.Portfolio.ClosedShortPositionsValue,
-        Returns = log.Portfolio.Returns,
-        ProfitAndLoss = log.Portfolio.ProfitAndLoss,
-        ShortVwap = log.Variables.ShortVwap,
-        LongVwap = log.Variables.LongVwap,
-        VwapPeriod = log.Variables.VwapPeriod,
-        Vwap = log.Variables.Vwap,
-        CoverBarrierPrice = log.Variables.CoverBarrierPrice,
-        MinLimit = log.Variables.MinLimit,
-        MaxLimit = log.Variables.MaxLimit,
-        NumShares = log.Variables.NumShares,
-        CoverAfterDays = log.Variables.CoverAfterDays,
-        ConstantValue = cv,
-        ConstantType = ct) ]
-
+   let newData = [ for i in data -> dataToIterationTable i ]
    iterationTable.InsertAllOnSubmit(newData)
 
+  /// Commits any open transactions.
   member this.Commit () = 
    try
     db.Portfolio_Iterations.Context.SubmitChanges()

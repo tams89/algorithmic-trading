@@ -87,7 +87,7 @@ module AlgoBackTester =
    (iterationType,iterationValue)
   
   // Iterate variable to determine best value.
-  [ 0.000M..0.002M..2.000M ]
+  [ 0.000M..0.005M..2.000M ]
   |> PSeq.ordered
   |> PSeq.iter (fun i -> 
       ((executeRun i), "longVwap", i)
