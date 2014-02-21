@@ -1,6 +1,7 @@
 ﻿namespace FinanceLibrary.AlgorithmicTrading
 
 module AlgoCalculation = 
+    
     open FinanceLibrary.Records
     
     /// Financial Calculations

@@ -3,9 +3,7 @@
 module AlgoPortfolio =
 
  open System
- open System.Runtime.InteropServices
  open FinanceLibrary.Records
- open Microsoft.FSharp.Collections
 
  /// PORTFOLIO
  type Portfolio(startingCash:decimal, startDate:DateTime) = class
