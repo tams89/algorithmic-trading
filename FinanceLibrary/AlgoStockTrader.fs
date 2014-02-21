@@ -78,12 +78,12 @@ module AlgoTrader =
           |> Seq.iter (fun (short) -> this.PlaceOrder(short.Symbol, tick.Date, (abs short.Quantity), currentPrice, Cover)
                                       this.PlaceCoverOrder(short))
 
-         /// COVER Daily
+         /// COVER after period
          /// If there any shorts where the market value has risen close to the the initial shorting value 
          /// then close the positions.
          elif not (portfolio.ShortPositions |> Seq.isEmpty) then
           portfolio.ShortPositions 
-          |> Seq.filter (fun x -> tick.Date > x.Date.AddDays(5.0))
+          |> Seq.filter (fun x -> tick.Date > x.Date.AddDays(1.0))
           |> Seq.iter (fun (short) -> this.PlaceOrder(short.Symbol, tick.Date, (abs short.Quantity), currentPrice, Cover)
                                       this.PlaceCoverOrder(short))
     end

@@ -12,7 +12,8 @@ module AlgoCalculation =
             let volumeWeightedAvgPrice (prices : seq<Tick>) (period : float) = 
                 let pricesInRange = 
                     let prices = prices |> Seq.toArray
-                    prices |> Array.filter (fun x -> x.Date >= prices.[prices.GetUpperBound(0)].Date.AddDays(-period))
+                    prices 
+                    |> Array.filter (fun x -> x.Date >= prices.[prices.GetUpperBound(0)].Date.AddDays(-period))
                 
                 let rec SumTradePriceVolume sum volSum counter = 
                     let limit = pricesInRange.Length
@@ -26,4 +27,5 @@ module AlgoCalculation =
             
             /// Volume Weighted Average Price
             member this.VWAP(period) = volumeWeightedAvgPrice prices period
+
         end

@@ -82,8 +82,8 @@ module AlgoBackTester =
      whatIterated))
    (whatIterated,iterateVal)
   
-  // Iterate constants
-  [ 1.22M ] // shortVwap list to iterate
+  // Iterate variable to determine best value.
+  [ 0.000M..0.005M..2.000M ]
   |> PSeq.ordered
   |> PSeq.iter (fun i -> ((executeRun i), i, "ShortVwap") |> addToLog |> console)
   
