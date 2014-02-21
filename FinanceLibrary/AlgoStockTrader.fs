@@ -25,7 +25,7 @@ module MomentumVWAP =
     /// TRADER
     type Trader(symbol : string, portfolio : Portfolio) = class
 
-     /// Place order / make trade
+     /// Makes a trade
      member private this.PlaceOrder(symbol, date, quantity, price, orderType) = 
       let orderRecord = 
        match orderType with
@@ -52,7 +52,6 @@ module MomentumVWAP =
      member private this.ClosePosition(order) = portfolio.ClosePosition(order)
 
      /// THE ALGORITHM
-     /// Cover barrier = 0.99M
      member this.IncomingTick(tick, shortVwap, longVwap, coverBarrier, minLimit, maxLimit, numShares, calcVwap) = 
          // Update with latest price information.
          let currentPrice = tick.Low
@@ -85,7 +84,6 @@ module MomentumVWAP =
           |> Seq.filter (fun x -> tick.Date > x.Date.AddDays(5.0))
           |> Seq.iter (fun (short) -> this.PlaceOrder(short.Symbol, tick.Date, (abs short.Quantity), currentPrice, Cover)
                                       this.ClosePosition(short))
-     
     end
 
     // Filter any useless or erroneous data.
@@ -110,7 +108,6 @@ module MomentumVWAP =
      let logger = new WriteIterationData()                                        // Database logging service.
      let stockService = new GetStockDataWeb() :> IStockService                    // Historical data service.
      let prices = cleanPrices (stockService.GetStockPrices symbol backTestPeriod) // Obtain historical data.
-     
      
      let executeRun i = 
       
@@ -159,7 +156,7 @@ module MomentumVWAP =
       (whatIterated,iterateVal)
      
      // Iterate constants
-     [ 0.000M..0.005M..2.000M ] // shortVwap list to iterate
+     [ 1.22M ] // shortVwap list to iterate
      |> PSeq.ordered
      |> PSeq.iter (fun i -> ((executeRun i), i, "ShortVwap") |> addToLog |> console)
      

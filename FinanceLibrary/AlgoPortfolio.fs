@@ -90,7 +90,10 @@ module AlgoPortfolio =
    with get() = this.ProfitAndLoss / startingCash
 
   /// A new position / order.
-  member this.AddPosition(order) = positions.Add(order)
+  member this.AddPosition(order) = 
+   match order.OrderType with
+   | Cover -> closedPositions.Add(order)
+   | _ -> positions.Add(order)
 
   /// Close a position. Removes it from positions and places it in the closed
   /// positions collection.
