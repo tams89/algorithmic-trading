@@ -10,15 +10,10 @@
 *)
 module AlgoTrader = 
     
-    open System
-    open Microsoft.FSharp.Collections
     open FinanceLibrary
     open Records
-    open Interfaces
-    open YahooFinanceAPI.Stock
     open AlgorithmicTrading.AlgoPortfolio
     open AlgorithmicTrading.AlgoCalculation
-    open DatabaseLayer
 
     let console (item,value) = 
      printfn "Current of %A is %A" item value
