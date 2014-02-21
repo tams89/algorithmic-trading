@@ -56,11 +56,11 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Compile Include="RecordsNInterfaces.fs" />
-    <Compile Include="DatabaseLayer.fs" />
     <Compile Include="YahooOptionAPI.fs" />
     <Compile Include="YahooStockAPI.fs" />
     <Compile Include="AlgoCalculation.fs" />
     <Compile Include="AlgoPortfolio.fs" />
+    <Compile Include="DatabaseLayer.fs" />
     <Compile Include="AlgoStockTrader.fs" />
     <Compile Include="AlgoBackTester.fs" />
     <None Include="AlgoTradingScript.fsx" />

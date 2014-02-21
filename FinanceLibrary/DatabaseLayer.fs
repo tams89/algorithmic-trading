@@ -1,13 +1,18 @@
 ﻿namespace FinanceLibrary
 
-open System
-open System.Data.Linq
-open Microsoft.FSharp.Data.TypeProviders
-open FinanceLibrary.Interfaces
-open FinanceLibrary.Records
-
 module DatabaseLayer = 
+
+ open System
+ open System.Data.Linq
+ open Microsoft.FSharp.Data.TypeProviders
+ open FinanceLibrary.Interfaces
+ open FinanceLibrary.Records
+ open FinanceLibrary.AlgorithmicTrading.AlgoPortfolio
  
+ type Log =
+   { Portfolio:Portfolio
+     Variables:Variables }
+
  type dbSchema = SqlDataConnection<"Data Source=.;Initial Catalog=AlgorithmicTrading;Integrated Security=True">
 
  type GetStockDataDB() = 
@@ -42,56 +47,70 @@ module DatabaseLayer =
    db.DataContext.Log <- System.Console.Out
 
   /// Writes iteration data results to database.
-  member this.InsertIterationData 
-   (data: decimal*decimal*decimal*int*int*int*int*decimal*decimal*decimal*decimal*decimal*decimal*decimal*string) = 
-   
-   // Make individual data accessible from tuple.
-   let sc,cc,pv,cp,sp,clp,clsp,psv,spv,cpv,clspv,r,pnl,cv,ct = data
+  member this.InsertIterationData (data: Log*string*decimal) = 
    
    // data formatted to SQL table.
+   let log,ct,cv = data
    let newData = 
     new dbSchema.ServiceTypes.Portfolio_Iterations(
      IterationId = Guid.NewGuid(),
-     StartingCash = sc,
-     CurrentCash = cc,
-     PortfolioValue = pv,
-     CurrentPositions = cp,
-     ShortPositions = sp,
-     ClosedPositions = clp,
-     ClosedShortPositions = clsp,
-     PositionValue = psv,
-     ShortPositionValue = spv,
-     ClosedPositionValue = cpv,
-     ClosedShortPositionValue = clspv,
-     Returns = r,
-     ProfitAndLoss = pnl,
+     StartingCash = log.Portfolio.StartingCash,
+     CurrentCash = log.Portfolio.Cash,
+     PortfolioValue = log.Portfolio.PortfolioValue,
+     CurrentPositions = log.Portfolio.Positions.Count,
+     ShortPositions = (log.Portfolio.ShortPositions |> Seq.length),
+     ClosedPositions = log.Portfolio.ClosedPositions.Count,
+     ClosedShortPositions = (log.Portfolio.ClosedShortPositions |> Seq.length),
+     PositionValue = log.Portfolio.PortfolioValue,
+     ShortPositionValue = log.Portfolio.ShortPositionsValue,
+     ClosedPositionValue = log.Portfolio.ClosedPositionsValue,
+     ClosedShortPositionValue = log.Portfolio.ClosedShortPositionsValue,
+     Returns = log.Portfolio.Returns,
+     ProfitAndLoss = log.Portfolio.ProfitAndLoss,
+     ShortVwap = log.Variables.ShortVwap,
+     LongVwap = log.Variables.LongVwap,
+     VwapPeriod = log.Variables.VwapPeriod,
+     Vwap = log.Variables.Vwap,
+     CoverBarrierPrice = log.Variables.CoverBarrierPrice,
+     MinLimit = log.Variables.MinLimit,
+     MaxLimit = log.Variables.MaxLimit,
+     NumShares = log.Variables.NumShares,
+     CoverAfterDays = log.Variables.CoverAfterDays,
      ConstantValue = cv,
      ConstantType = ct)
 
    iterationTable.InsertOnSubmit(newData)
 
   /// Writes iteration data results to database.
-  member this.InsertIterationData 
-   (data : System.Collections.Generic.IEnumerable<decimal*decimal*decimal*int*int*int*int*decimal*decimal*decimal*decimal*decimal*decimal*decimal*string>) = 
-   
+  member this.InsertIterationData (data : System.Collections.Generic.IEnumerable<Log*string*decimal>) = 
+
    let newData = 
     [ for i in data ->
-       let sc,cc,pv,cp,sp,clp,clsp,psv,spv,cpv,clspv,r,pnl,cv,ct = i
+       let log,ct,cv = i
        new dbSchema.ServiceTypes.Portfolio_Iterations(
         IterationId = Guid.NewGuid(),
-        StartingCash = sc,
-        CurrentCash = cc,
-        PortfolioValue = pv,
-        CurrentPositions = cp,
-        ShortPositions = sp,
-        ClosedPositions = clp,
-        ClosedShortPositions = clsp,
-        PositionValue = psv,
-        ShortPositionValue = spv,
-        ClosedPositionValue = cpv,
-        ClosedShortPositionValue = clspv,
-        Returns = r,
-        ProfitAndLoss = pnl,
+        StartingCash = log.Portfolio.StartingCash,
+        CurrentCash = log.Portfolio.Cash,
+        PortfolioValue = log.Portfolio.PortfolioValue,
+        CurrentPositions = log.Portfolio.Positions.Count,
+        ShortPositions = (log.Portfolio.ShortPositions |> Seq.length),
+        ClosedPositions = log.Portfolio.ClosedPositions.Count,
+        ClosedShortPositions = (log.Portfolio.ClosedShortPositions |> Seq.length),
+        PositionValue = log.Portfolio.PortfolioValue,
+        ShortPositionValue = log.Portfolio.ShortPositionsValue,
+        ClosedPositionValue = log.Portfolio.ClosedPositionsValue,
+        ClosedShortPositionValue = log.Portfolio.ClosedShortPositionsValue,
+        Returns = log.Portfolio.Returns,
+        ProfitAndLoss = log.Portfolio.ProfitAndLoss,
+        ShortVwap = log.Variables.ShortVwap,
+        LongVwap = log.Variables.LongVwap,
+        VwapPeriod = log.Variables.VwapPeriod,
+        Vwap = log.Variables.Vwap,
+        CoverBarrierPrice = log.Variables.CoverBarrierPrice,
+        MinLimit = log.Variables.MinLimit,
+        MaxLimit = log.Variables.MaxLimit,
+        NumShares = log.Variables.NumShares,
+        CoverAfterDays = log.Variables.CoverAfterDays,
         ConstantValue = cv,
         ConstantType = ct) ]
 

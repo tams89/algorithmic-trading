@@ -12,7 +12,7 @@ module AlgoBackTester =
  open AlgorithmicTrading.AlgoCalculation
  open AlgorithmicTrading.AlgoTrader
  open DatabaseLayer
- 
+
  let console (item,value) = 
   printfn "Current of %A is %A" item value
 
@@ -29,8 +29,7 @@ module AlgoBackTester =
  
  /// Backtest using historical data to simulate returns.
  let backTest () = 
-  let logRecs = 
-   new System.Collections.Generic.List<decimal*decimal*decimal*int*int*int*int*decimal*decimal*decimal*decimal*decimal*decimal*decimal*string>()
+  let logRecs = new System.Collections.Generic.List<Log*string*decimal>()
  
   // Set data variables.
   let symbol = "MSFT"                                                          // Get historical stock prices for the symbol.
@@ -64,33 +63,34 @@ module AlgoBackTester =
     trader.IncomingTick(tick, shortVwap, longVwap, coverBarrier, minLimit, maxLimit, numOfShares, coverAfter, vwap))
  
    // Return the portfolio on market close / simulation over.
-   portfolio
+   let variables = 
+    { BackTestPeriod = backTestPeriod; 
+      ShortVwap = shortVwap; 
+      LongVwap = longVwap; 
+      VwapPeriod = vwapPeriod; 
+      Vwap = vwap; 
+      CoverBarrierPrice = coverBarrier; 
+      MinLimit = minLimit; 
+      MaxLimit = maxLimit; 
+      NumShares = numOfShares; 
+      CoverAfterDays = coverAfter  }
+
+   let log = 
+    { Portfolio = portfolio
+      Variables = variables  }
+
+   log
   
   // Store the constant iterated over, and portfolio results.
-  let addToLog (portfolio:Portfolio, iterateVal:decimal, whatIterated:string)  =
-   logRecs.Add(
-    (portfolio.StartingCash,
-     portfolio.Cash,
-     portfolio.PortfolioValue, 
-     portfolio.Positions  |> Seq.length, 
-     portfolio.ShortPositions  |> Seq.length, 
-     portfolio.ClosedPositions  |> Seq.length,
-     portfolio.ClosedShortPositions |> Seq.length,
-     portfolio.PositionsValue, 
-     portfolio.ShortPositionsValue, 
-     portfolio.ClosedPositionsValue, 
-     portfolio.ClosedShortPositionsValue, 
-     portfolio.Returns, 
-     portfolio.ProfitAndLoss, 
-     iterateVal, 
-     whatIterated))
-   (whatIterated,iterateVal)
+  let addToLog (log : Log, iterationType:string, iterationValue:decimal)  =
+   logRecs.Add(log,iterationType,iterationValue)
+   (iterationType,iterationValue)
   
   // Iterate variable to determine best value.
   [ 0.000M..0.002M..2.000M ]
   |> PSeq.ordered
   |> PSeq.iter (fun i -> 
-      ((executeRun i), i, "longVWAP," + " BackTestPeriod=" + backTestPeriod.ToString()) 
+      ((executeRun i), "longVwap", i)
       |> addToLog 
       |> console)
   

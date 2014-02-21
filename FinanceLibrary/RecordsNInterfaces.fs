@@ -2,7 +2,6 @@
 
 module Records = 
  open System
-
  type Tick = 
      { Date : DateTime
        Open : decimal
@@ -39,6 +38,18 @@ module Records =
        OrderType : OrderType
        Value : decimal }
      override this.ToString() = sprintf "%A, %A, %A, %A, %A" this.Symbol this.Date this.Quantity this.OrderType this.Value
+
+ type Variables = 
+  { BackTestPeriod:int
+    ShortVwap:decimal
+    LongVwap:decimal
+    VwapPeriod: float
+    Vwap:decimal
+    CoverBarrierPrice:decimal
+    MinLimit:decimal
+    MaxLimit:decimal
+    NumShares:decimal
+    CoverAfterDays:float }
 
 module Interfaces =
  open Records
