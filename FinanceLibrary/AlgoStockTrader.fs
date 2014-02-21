@@ -48,7 +48,7 @@ module AlgoTrader =
      member private this.PlaceCoverOrder(order) = portfolio.ClosePosition(order)
 
      /// THE ALGORITHM
-     member this.IncomingTick(tick, shortVwap, longVwap, coverBarrier, minLimit, maxLimit, numShares, calcVwap) = 
+     member this.IncomingTick(tick, shortVwap, longVwap, coverBarrier, minLimit, maxLimit, numShares, coverAfter, calcVwap) = 
          
          // Update with latest price information.
          let currentPrice = tick.Low
@@ -78,7 +78,7 @@ module AlgoTrader =
          /// then close the positions.
          elif not (portfolio.ShortPositions |> Seq.isEmpty) then
           portfolio.ShortPositions 
-          |> Seq.filter (fun x -> tick.Date > x.Date.AddDays(1.0))
+          |> Seq.filter (fun x -> tick.Date > x.Date.AddDays(coverAfter))
           |> Seq.iter (fun (short) -> this.PlaceOrder(short.Symbol, tick.Date, (abs short.Quantity), currentPrice, Cover)
                                       this.PlaceCoverOrder(short))
     end
