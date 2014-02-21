@@ -3,13 +3,15 @@
 module AlgoPortfolio =
 
  open System
+ open System.Runtime.InteropServices
  open FinanceLibrary.Records
  open Microsoft.FSharp.Collections
 
  /// PORTFOLIO
  type Portfolio(startingCash:decimal, startDate:DateTime) = class
-  let positions = System.Collections.Generic.List<Order>()
-  let closedPositions = System.Collections.Generic.List<Order>()
+  let positions = new System.Collections.Concurrent.ConcurrentBag<Order>()
+  let closedPositions = new System.Collections.Concurrent.ConcurrentBag<Order>()
+
   let mutable currentPrice = 0M
 
   /// The starting date of the portfolio.
@@ -34,25 +36,30 @@ module AlgoPortfolio =
   /// List of all positions.
   member this.Positions
    with get() = positions
+    |> Seq.toArray
 
   /// List of all closed positions.
   member this.ClosedPositions
    with get() = closedPositions
+    |> Seq.toArray
 
   /// Long positions.
   member this.LongPositions
-   with get() = positions 
+   with get() = this.Positions
     |> Seq.filter (fun x -> x.OrderType = Long) 
+    |> Seq.toArray
  
   /// Short positions.
   member this.ShortPositions
-   with get() = positions 
+   with get() = this.Positions 
     |> Seq.filter (fun x -> x.OrderType = Short) 
+    |> Seq.toArray
 
   /// Closed Short Positions
   member this.ClosedShortPositions
    with get() = this.ClosedPositions
     |> Seq.filter (fun x -> x.OrderType = Short)
+    |> Seq.toArray
 
   /// Total value of all open positions.
   member this.PositionsValue
@@ -61,7 +68,7 @@ module AlgoPortfolio =
      match order.OrderType with 
      | Long -> order.Quantity * currentPrice
      | _ -> order.Value
-    positions |> Seq.sumBy (fun x -> positionValue x)
+    this.Positions |> Seq.sumBy (fun x -> positionValue x)
 
   /// Value of all short positions.
   /// http://fundmanagersoftware.com/help/short_positions.html
@@ -71,12 +78,12 @@ module AlgoPortfolio =
   
   /// Value of all closed positions.
   member this.ClosedPositionsValue
-   with get() = closedPositions
+   with get() = this.ClosedPositions
     |> Seq.sumBy (fun x -> x.Value)
   
   /// Value of all closed short positions.
   member this.ClosedShortPositionsValue
-   with get() = closedPositions
+   with get() = this.ClosedPositions
     |> Seq.sumBy (fun x -> x.Value)
 
   /// Sum of positionsValue and cash.
@@ -92,8 +99,8 @@ module AlgoPortfolio =
 
   /// Close a position. Removes it from positions and places it in the closed
   /// positions collection.
-  member this.ClosePosition(order) = 
-   positions.Remove(order) |> ignore
+  member this.ClosePosition(order : Order) = 
+   positions.TryTake(ref order) |> ignore
    closedPositions.Add(order)
   
   override this.ToString() = 

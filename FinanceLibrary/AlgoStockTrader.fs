@@ -16,170 +16,155 @@ module MomentumVWAP =
     open FinanceLibrary.Interfaces
     open YahooFinanceAPI.Stock
     open AlgorithmicTrading.AlgoPortfolio
+    open AlgorithmicTrading.AlgoCalculation
     open DatabaseLayer
 
     let console (item,value) = 
      printfn "Current of %A is %A" item value
-
+    
     /// TRADER
-    type Trader (portfolio : Portfolio, logger : WriteIterationData, symbol : string, prices : Tick []) = class
+    type Trader(symbol : string, portfolio : Portfolio) = class
 
-            /// Calculated using mean high low close.
-            let volumeWeightedAvgPrice (prices : Tick []) (period : float) = 
+     /// Place order / make trade
+     member private this.PlaceOrder(symbol, date, quantity, price, orderType) = 
+      let orderRecord = 
+       match orderType with
+       | Long -> { Symbol = symbol; 
+                   Date = date;
+                   Quantity = quantity;
+                   OrderType = Long;
+                   Value = decimal(quantity) * price; }
 
-             let pricesInRange = 
-              prices 
-              |> Seq.toArray
-              |> Array.filter (fun x -> x.Date >= prices.[prices.GetUpperBound(0)].Date.AddDays(-period))
+       | Short -> { Symbol = symbol; 
+                    Date = date;
+                    Quantity = - quantity;
+                    OrderType = Short;
+                    Value = - decimal(quantity) * price; }
 
-             let rec SumTradePriceVolume sum volSum counter = 
-               let limit = pricesInRange.Length
-               if counter < limit then 
-                let tick = pricesInRange.[counter]
-                let tickPrice = (tick.High + tick.Low + tick.Close ) / 3.0M
-                SumTradePriceVolume (sum + tickPrice * tick.Volume) (volSum + tick.Volume)  (counter + 1)
-               else sum / volSum
+       | Cover -> { Symbol = symbol; 
+                    Date = date;
+                    Quantity = quantity;
+                    OrderType = Cover;
+                    Value = - decimal(quantity) * price; }
+      
+      portfolio.AddPosition(orderRecord)
 
-             let vwap = SumTradePriceVolume 0M 0M 0
-             vwap
-            
-            /// Place order / make trade
-            member private this.PlaceOrder(symbol, date, quantity, price, orderType) = 
-             let orderRecord = 
-              match orderType with
-              | Long -> { Symbol = symbol; 
-                          Date = date;
-                          Quantity = quantity;
-                          OrderType = Long;
-                          Value = decimal(quantity) * price; }
+     member private this.ClosePosition(order) = portfolio.ClosePosition(order)
 
-              | Short -> { Symbol = symbol; 
-                           Date = date;
-                           Quantity = - quantity;
-                           OrderType = Short;
-                           Value = - decimal(quantity) * price; }
+     /// THE ALGORITHM
+     /// Cover barrier = 0.99M
+     member this.IncomingTick(tick, shortVwap, longVwap, coverBarrier, minLimit, maxLimit, numShares, calcVwap) = 
+         // Update with latest price information.
+         let currentPrice = tick.Low
+         portfolio.CurrentPrice <- currentPrice
+         
+         // SHORT
+         /// if the stocks price less than the vwap by 0.5% and the limit has not been exceeded.
+         if currentPrice < (calcVwap * shortVwap) && (portfolio.PositionsValue > minLimit) then 
+          this.PlaceOrder(symbol, tick.Date, numShares, currentPrice, Short)
+         
+         /// LONG
+         /// if the stock price has increased by 0.1% to the vwap and we havent reached exposure limit then buy.
+         elif currentPrice > (calcVwap * longVwap) && (portfolio.PositionsValue < maxLimit) then 
+          this.PlaceOrder(symbol, tick.Date, numShares, currentPrice, Long)
 
-              | Cover -> { Symbol = symbol; 
-                           Date = date;
-                           Quantity = quantity;
-                           OrderType = Cover;
-                           Value = - decimal(quantity) * price; }
-             
-             portfolio.AddPosition(orderRecord)
+         /// COVER
+         /// If there any shorts where the market value has risen close to the the initial shorting value 
+         /// then close the positions.
+         elif not (portfolio.ShortPositions |> Seq.isEmpty) then
+          portfolio.ShortPositions 
+          |> Seq.filter (fun x -> x.Value < 0M && abs (x.Value / decimal x.Quantity) > currentPrice * coverBarrier)
+          |> Seq.iter (fun (short) -> this.PlaceOrder(short.Symbol, tick.Date, (abs short.Quantity), currentPrice, Cover)
+                                      this.ClosePosition(short))
 
-            member private this.ClosePosition(order) = portfolio.ClosePosition(order)
+         /// COVER Daily
+         /// If there any shorts where the market value has risen close to the the initial shorting value 
+         /// then close the positions.
+         elif not (portfolio.ShortPositions |> Seq.isEmpty) then
+          portfolio.ShortPositions 
+          |> Seq.filter (fun x -> tick.Date > x.Date.AddDays(5.0))
+          |> Seq.iter (fun (short) -> this.PlaceOrder(short.Symbol, tick.Date, (abs short.Quantity), currentPrice, Cover)
+                                      this.ClosePosition(short))
+     
+    end
 
-            /// THE ALGORITHM
-            /// Cover barrier = 0.99M
-            member private this.IncomingTick(tick, shortVwap, longVwap, coverBarrier, minLimit, maxLimit, numShares, vwapPeriod) = 
+    // Filter any useless or erroneous data.
+    let cleanPrices (prices: Tick []) = 
+     let limit = prices.GetUpperBound(0)
+     let rec tickList list counter =
+      match prices.[counter] with 
+      | tick when counter < limit && tick.High >= 1M && tick.Low >= 1M && tick.Close >= 1M && tick.Volume >= 1M 
+        -> tickList (tick::list) (counter + 1)
+      | tick when counter = limit -> list
+      | _ -> tickList list (counter + 1)
+     tickList List.empty<Tick> 0
 
-                // Update with latest price information.
-                let currentPrice = tick.Low
-                portfolio.CurrentPrice <- currentPrice
-                let calcVwap = volumeWeightedAvgPrice prices vwapPeriod
-                
-                // SHORT
-                /// if the stocks price less than the vwap by 0.5% and the limit has not been exceeded.
-                if currentPrice < (calcVwap * shortVwap) && (portfolio.PositionsValue > minLimit) then 
-                 this.PlaceOrder(symbol, tick.Date, numShares, currentPrice, Short)
-                
-                /// LONG
-                /// if the stock price has increased by 0.1% to the vwap and we havent reached exposure limit then buy.
-                elif currentPrice > (calcVwap * longVwap) && (portfolio.PositionsValue < maxLimit) then 
-                 this.PlaceOrder(symbol, tick.Date, numShares, currentPrice, Long)
+    /// Backtest using historical data to simulate returns.
+    let backTest () = 
+     let logRecs = 
+      new System.Collections.Generic.List<decimal*decimal*decimal*int*int*int*int*decimal*decimal*decimal*decimal*decimal*decimal*decimal*string>()
+    
+     // Set data variables.
+     let symbol = "MSFT"                                                          // Get historical stock prices for the symbol.
+     let backTestPeriod = 600                                                     // Previous days worth of historical data to obtain.
+     let logger = new WriteIterationData()                                        // Database logging service.
+     let stockService = new GetStockDataWeb() :> IStockService                    // Historical data service.
+     let prices = cleanPrices (stockService.GetStockPrices symbol backTestPeriod) // Obtain historical data.
+     
+     
+     let executeRun i = 
+      
+      let startingCash = 10000M      // Portfolio starting capital.
+      let startDate = DateTime.Today // Portfolio creation date. 
+      
+      // Instantiate system components.
+      let portfolio = new Portfolio(startingCash, startDate)
+      let trader = new Trader(symbol, portfolio)
+      let finCalc = new Calculation(prices)
 
-                /// COVER
-                /// If there any shorts where the market value has risen close to the the initial shorting value 
-                /// then close the positions.
-                elif not (portfolio.ShortPositions |> Seq.isEmpty) then
-                 portfolio.ShortPositions 
-                 |> Seq.filter (fun x -> x.Value < 0M && abs (x.Value / decimal x.Quantity) > currentPrice * coverBarrier)
-                 |> Seq.iter (fun (short) -> this.PlaceOrder(short.Symbol, tick.Date, (abs short.Quantity), currentPrice, Cover)
-                                             this.ClosePosition(short))
+                                            // ALGORITHM VARIABLES.
+      let shortVwap = 0.998M                // percentage of vwap to allow short position.
+      let longVwap = 1.001M                 // percentage of vwap to allow long position.
+      let coverBarrier = 0.99M              // percentage of current price to begin covering at.
+      let minLimit = - (abs portfolio.Cash) // must be negative, used for short positions.
+      let maxLimit = portfolio.Cash + 0.1M  // must be postive, used for long positions.
+      let numOfShares = 100M                // Shares limit to buy/sell.
+      let vwapPeriod =  5.0                 // Period of days to use to calculate vwap.
+      let vwap = finCalc.VWAP(vwapPeriod)   // Volume Weighted Average Price calculated from cleaned prices.
 
-                /// COVER Daily
-                /// If there any shorts where the market value has risen close to the the initial shorting value 
-                /// then close the positions.
-                elif not (portfolio.ShortPositions |> Seq.isEmpty) then
-                 portfolio.ShortPositions 
-                 |> Seq.filter (fun x -> tick.Date > x.Date.AddDays(5.0))
-                 |> Seq.iter (fun (short) -> this.PlaceOrder(short.Symbol, tick.Date, (abs short.Quantity), currentPrice, Cover)
-                                             this.ClosePosition(short))
+      // Execute trading algorithm on the historical data.
+      prices |> Seq.iter (fun tick -> trader.IncomingTick(tick, shortVwap, longVwap, coverBarrier, minLimit, maxLimit, numOfShares, vwap))
 
-            /// Backtest using historical data to simulate returns.
-            member this.BackTest () = 
-                printfn "Algorithm Started."
-
-                let logRecs = 
-                 new System.Collections.Generic.List<decimal*decimal*decimal*int*int*int*int*decimal*decimal*decimal*decimal*decimal*decimal*decimal*string>()
-
-                // Filter any useless or erroneous data.
-                let cleanPrices = 
-                 let limit = prices.GetUpperBound(0)
-                 let rec tickList list counter =
-                  match prices.[counter] with 
-                  | tick when counter < limit && tick.High >= 1M && tick.Low >= 1M && tick.Close >= 1M && tick.Volume >= 1M 
-                    -> tickList (tick::list) (counter + 1)
-                  | tick when counter = limit -> list
-                  | _ -> tickList list (counter + 1)
-                 tickList List.empty<Tick> 0
-
-                let executeRun shortVwap longVwap coverBarrier minLimit maxLimit numShares vwapPeriod = 
-                 // Execute trading algorithm on the historical data.
-                 cleanPrices |> Seq.iter (fun tick -> this.IncomingTick(tick, shortVwap, longVwap, coverBarrier, minLimit, maxLimit, numShares, vwapPeriod))
-                 portfolio 
-
-                // Store the constant iterated over, and portfolio results.
-                let addToLog (portfolio:Portfolio, iterateVal:decimal, whatIterated:string)  =
-                 logRecs.Add(
-                  (portfolio.StartingCash,
-                   portfolio.Cash,
-                   portfolio.PortfolioValue, 
-                   portfolio.Positions.Count, 
-                   portfolio.ShortPositions |> Seq.length, 
-                   portfolio.ClosedPositions.Count,
-                   portfolio.ClosedShortPositions |> Seq.length,
-                   portfolio.PositionsValue, 
-                   portfolio.ShortPositionsValue, 
-                   portfolio.ClosedPositionsValue, 
-                   portfolio.ClosedShortPositionsValue, 
-                   portfolio.Returns, 
-                   portfolio.ProfitAndLoss, 
-                   iterateVal, 
-                   whatIterated))
-                 (whatIterated,iterateVal)
-                
-                let shortVwap = 0.998M                // percentage of vwap to allow short position.
-                let longVwap = 1.001M                 // percentage of vwap to allow long position.
-                let coverBarrier = 0.99M              // percentage of current price to begin covering at.
-                let minlimit = - (abs portfolio.Cash) // must be negative, used for short positions.
-                let maxlimit = portfolio.Cash + 0.1M  // must be postive, used for long positions.
-                let numOfShares = 100M                // Shares limit to buy/sell
-                let vwapPeriod = 5.0                  // Period of days to use to calculate vwap.
-
-                // Iterate constants
-                [ 0.000M..0.005M..2.000M ] // shortVwap list to iterate
-                |> PSeq.ordered
-                |> PSeq.iter (fun i -> 
-                    ((executeRun i longVwap coverBarrier minlimit maxlimit numOfShares vwapPeriod), i, "ShortVwap") 
-                    |> addToLog 
-                    |> console)
-
-                // Insert collection of log data to database.
-                logger.InsertIterationData(logRecs)
-                logger.Commit()
-
-                printfn "Algorithm Ended."
-        end
-
-    /// EXECUTION
-    let execute = 
-     let stockService = new GetStockDataWeb() :> IStockService
-     // Get historical stock prices for the symbol
-     let symbol = "MSFT"
-     let backTestPeriod = 3000
-     let prices = stockService.GetStockPrices symbol backTestPeriod
-     let l = new WriteIterationData()
-     let p = new Portfolio(10000M, DateTime.Today)
-     let trader = new Trader(p, l, symbol, prices)
-     trader.BackTest()
+      // Return the portfolio on market close / simulation over.
+      portfolio
+     
+     // Store the constant iterated over, and portfolio results.
+     let addToLog (portfolio:Portfolio, iterateVal:decimal, whatIterated:string)  =
+      logRecs.Add(
+       (portfolio.StartingCash,
+        portfolio.Cash,
+        portfolio.PortfolioValue, 
+        portfolio.Positions.Length, 
+        portfolio.ShortPositions.Length, 
+        portfolio.ClosedPositions.Length,
+        portfolio.ClosedShortPositions |> Seq.length,
+        portfolio.PositionsValue, 
+        portfolio.ShortPositionsValue, 
+        portfolio.ClosedPositionsValue, 
+        portfolio.ClosedShortPositionsValue, 
+        portfolio.Returns, 
+        portfolio.ProfitAndLoss, 
+        iterateVal, 
+        whatIterated))
+      (whatIterated,iterateVal)
+     
+     // Iterate constants
+     [ 0.000M..0.005M..2.000M ] // shortVwap list to iterate
+     |> PSeq.ordered
+     |> PSeq.iter (fun i -> ((executeRun i), i, "ShortVwap") |> addToLog |> console)
+     
+     // Insert collection of log data to database.
+     logger.InsertIterationData(logRecs)
+     logger.Commit()
+     
+     printfn "Algorithm Ended."
