@@ -89,7 +89,7 @@ module AlgoBackTester =
   // Iterate variable to determine best value.
   [ 0.000M..0.005M..2.000M ]
   |> PSeq.ordered
-  |> PSeq.iter (fun i -> ((executeRun i), i, "ShortVwap") |> addToLog |> console)
+  |> PSeq.iter (fun i -> ((executeRun i), i, backTestPeriod.ToString() + "BackTest Period " + " ShortVWAP ") |> addToLog |> console)
   
   // Insert collection of log data to database.
   logger.InsertIterationData(logRecs)
