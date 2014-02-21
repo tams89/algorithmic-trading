@@ -62,6 +62,7 @@
     <Compile Include="AlgoCalculation.fs" />
     <Compile Include="AlgoPortfolio.fs" />
     <Compile Include="AlgoStockTrader.fs" />
+    <Compile Include="AlgoBackTester.fs" />
     <None Include="AlgoTradingScript.fsx" />
     <None Include="YahooOptions.fsx" />
     <None Include="packages.config" />
