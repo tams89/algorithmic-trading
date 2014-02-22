@@ -23,7 +23,7 @@ module AlgoBackTester =
  let fn (e) =
   match e with
     | PropertyGet (_, pi, _) -> pi.Name
-    | _ -> failwith "not a let-bound value"
+    | _ -> ""
 
  // Filter any useless or erroneous data.
  let cleanPrices (prices: Tick []) = 
@@ -57,9 +57,9 @@ module AlgoBackTester =
    let finCalc = new Calculation(prices)
 
    // ALGORITHM VARIABLES.
-   let shortVwap = iterate               // percentage of vwap to allow short position. (defauly = 0.998M / 0.2% less than vwap)
+   let shortVwap = 1.2950M               // percentage of vwap to allow short position. (defauly = 0.998M / 0.2% less than vwap)
    let longVwap = 0.540M                 // percentage of vwap to allow long position. (default = 1.100M / 1% greater than vwap)
-   let coverBarrier = 0.99M              // percentage of current price to begin covering at.
+   let coverBarrier = 1.7450M            // percentage of current price to begin covering at. (default 0.99M)
    let minLimit = - portfolio.Cash       // must be negative, used for short positions.
    let maxLimit = portfolio.Cash + 0.1M  // must be postive, used for long positions.
    let numOfShares = 100M                // Shares limit to buy/sell.
@@ -97,13 +97,13 @@ module AlgoBackTester =
    (iterationType,iterationValue)
   
   // Iterate variable to determine best value.
-  [ 0.000M..0.005M..2.000M ]
+  [ 0M ]
   |> PSeq.ordered
   |> PSeq.iter (fun i -> 
-      ((executeRun i), fn <@ i @>, i, prices.Head.Date, (prices |> List.rev).Head.Date)
+      ((executeRun i), "coverBarrier", i, prices.Head.Date, (prices |> List.rev).Head.Date)
       |> addToLog 
       |> console)
-  
+
   // Insert collection of log data to database.
   logger.InsertIterationData(logRecs)
   logger.Commit()
