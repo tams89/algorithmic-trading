@@ -4,6 +4,8 @@ module AlgoBackTester =
 
  open System
  open Microsoft.FSharp.Collections
+ open Microsoft.FSharp.Quotations
+ open Microsoft.FSharp.Quotations.Patterns
  open FinanceLibrary
  open Records
  open Interfaces
@@ -13,8 +15,15 @@ module AlgoBackTester =
  open AlgorithmicTrading.AlgoTrader
  open DatabaseLayer
 
+
  let console (item,value) = 
   printfn "Current of %A is %A" item value
+ 
+ /// Returns the name of the variable.
+ let fn (e) =
+  match e with
+    | PropertyGet (_, pi, _) -> pi.Name
+    | _ -> failwith "not a let-bound value"
 
  // Filter any useless or erroneous data.
  let cleanPrices (prices: Tick []) = 
@@ -38,7 +47,7 @@ module AlgoBackTester =
   let stockService = new GetStockDataWeb() :> IStockService                    // Historical data service.
   let prices = cleanPrices (stockService.GetStockPrices symbol backTestPeriod) // Obtain historical data.
 
-  let executeRun i = 
+  let executeRun iterate = 
    
    // Instantiate system components.
    let startingCash = 10000M      // Portfolio starting capital.
@@ -48,8 +57,8 @@ module AlgoBackTester =
    let finCalc = new Calculation(prices)
 
    // ALGORITHM VARIABLES.
-   let shortVwap = 1.8250M               // percentage of vwap to allow short position. (defauly = 0.998M / 0.2% less than vwap)
-   let longVwap = i                      // percentage of vwap to allow long position. (default = 1.100M / 1% greater than vwap)
+   let shortVwap = iterate               // percentage of vwap to allow short position. (defauly = 0.998M / 0.2% less than vwap)
+   let longVwap = 0.540M                 // percentage of vwap to allow long position. (default = 1.100M / 1% greater than vwap)
    let coverBarrier = 0.99M              // percentage of current price to begin covering at.
    let minLimit = - portfolio.Cash       // must be negative, used for short positions.
    let maxLimit = portfolio.Cash + 0.1M  // must be postive, used for long positions.
@@ -91,7 +100,7 @@ module AlgoBackTester =
   [ 0.000M..0.005M..2.000M ]
   |> PSeq.ordered
   |> PSeq.iter (fun i -> 
-      ((executeRun i), "longVwap", i)
+      ((executeRun i), fn <@ i @>, i, prices.Head.Date, (prices |> List.rev).Head.Date)
       |> addToLog 
       |> console)
   
