@@ -32,11 +32,11 @@ module AlgoBackTester =
   let logRecs = new System.Collections.Generic.List<Log*DateTime*DateTime>()
  
   // Set data variables.
-  let symbol = "MSFT"                                                              // Get historical stock prices for the symbol.
-  let backTestPeriod = 10000                                                       // Previous days worth of historical data to obtain.
-  let logger = new WriteIterationData()                                            // Database logging service.
-  let stockService = new GetStockDataWeb() :> IStockService                        // Historical data service.
-  let prices =                                                                     // Obtain historical data.
+  let symbol = "IBM Minute"                                                       // Get historical stock prices for the symbol.
+  let backTestPeriod = 10000                                                      // Previous days worth of historical data to obtain.
+  let logger = new WriteIterationData()                                           // Database logging service.
+  let stockService = new GetStockDataDB() :> IStockService                        // Historical data service.
+  let prices =                                                                    // Obtain historical data.
    List.toArray (cleanPrices (stockService.GetStockPrices symbol backTestPeriod))
 
   let executeRun iterate = 
@@ -49,13 +49,13 @@ module AlgoBackTester =
    let trader = new Trader(symbol, portfolio, finCalc)
 
    // ALGORITHM VARIABLES.
-   let shortVwap = 0.995M                  // percentage of vwap to allow short position. (default = 0.998M / 0.1% less than vwap)
-   let longVwap = 1.005M                   // percentage of vwap to allow long position. (default = 1.100M / 1% greater than vwap)
-   let coverBarrier = 0.995M               // percentage of current price to begin covering at. (default 0.99M)
+   let shortVwap = 0.995M                  // percentage of vwap to allow short position. (default = 0.995M)
+   let longVwap = 1.005M                   // percentage of vwap to allow long position. (default = 1.005M)
+   let coverBarrier = 0.998M               // percentage of current price to begin covering at. (default 0.99M)
    let minLimit = - portfolio.Cash * 0.5M  // must be negative, used for short positions.
    let maxLimit = portfolio.Cash + 0.1M    // must be postive, used for long positions.
    let coverAfter = 1.0                    // Days to cover any open positions after.
-   let vwapPeriod = 5.0                    // Period of days to use to calculate vwap.
+   let vwapPeriod = 2.0                    // Period of days to use to calculate vwap.
 
    // Execute trading algorithm on the historical data.
    prices 
@@ -84,10 +84,13 @@ module AlgoBackTester =
   let addToLog (log : Log, startDate, endDate) =
    logRecs.Add(log, startDate, endDate)
 
-  [ 0M ]
+  let startDate = prices.[0].Date
+  let endDate = prices.[prices.Length - 1].Date
+
+  [ 0 ]
   |> PSeq.ordered
   |> PSeq.iter (fun i -> 
-     ((executeRun i), prices.[0].Date, prices.[prices.Length - 1].Date)
+     ((executeRun i), startDate, endDate)
      |> addToLog)
      
   // Insert collection of log data to database.

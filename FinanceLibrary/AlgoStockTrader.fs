@@ -23,12 +23,6 @@ module AlgoTrader =
      // Field containing previous 10 ticks.
      let ticksToday = new System.Collections.Concurrent.ConcurrentQueue<Tick>()
 
-     // Get the latest tick.
-     let lastTick = 
-      let ticks = ticksToday.ToArray()
-      if ticks.Length > 1 then Some ticks.[0]
-      else None
-
      // Allows the addition of a tick to the queue.
      member private this.AddTickToQueue(tick) = 
        if ticksToday.Count >= 10 then ignore(ticksToday.TryDequeue(ref tick))
@@ -79,13 +73,11 @@ module AlgoTrader =
          // Calculate the latest Volume-Weighted-Average-Price.
          let calcVwap = this.CalculateVWAP(tick.Date, vwapPeriod)
 
-         // Will not execute any trades until vwap is present and will only trade once a day.
-         if (calcVwap > 1M && lastTick.IsSome && tick.Date.Date > lastTick.Value.Date.Date) ||
-            (calcVwap > 1M && lastTick.IsNone) then 
+         if calcVwap > 1M then
 
-          // Shares limit to buy/sell.
+          // Shares limit to buy/sell per trade.
           let numOfShares = floor (portfolio.Cash / calcVwap)
-          
+
           // SHORT
           /// if the stocks price less than the vwap by 0.5% and the limit has not been exceeded.
           if currentPrice < (calcVwap * shortVwap) && (portfolio.PositionsValue > minLimit) then 
@@ -108,14 +100,14 @@ module AlgoTrader =
           /// COVER SHORT after period
           elif not (portfolio.ShortPositions |> Seq.isEmpty) then
            portfolio.ShortPositions 
-           |> Seq.filter (fun x -> x.Date.AddDays(coverAfter) > tick.Date)
+           |> Seq.filter (fun x -> x.Date.Date.AddDays(coverAfter) > tick.Date.Date)
            |> Seq.iter (fun short -> this.PlaceOrder(short.Symbol, tick.Date, (abs short.Quantity), currentPrice, Cover)
                                      this.ClosePosition(short))
           
           /// COVER LONG after period
           elif not (portfolio.LongPositions |> Seq.isEmpty) then
            portfolio.LongPositions 
-           |> Seq.filter (fun x -> x.Date.AddDays(coverAfter) > tick.Date)
+           |> Seq.filter (fun x -> x.Date.Date.AddDays(coverAfter) > tick.Date.Date)
            |> Seq.iter (fun long -> this.ClosePosition(long))
 
     end

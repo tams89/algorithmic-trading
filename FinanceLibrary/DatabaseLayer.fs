@@ -55,6 +55,7 @@ module DatabaseLayer =
                  where (row.Symbol = symbol && row.Date >= DateTime.Today.AddDays(float(-daysBack)))
                  sortBy row.Date
                  select row }
+
          |> Seq.map (fun x -> 
                 { Date = x.Date
                   Open = decimal x.Open
