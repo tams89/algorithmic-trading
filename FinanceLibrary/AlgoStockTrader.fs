@@ -30,7 +30,7 @@ module AlgoTrader =
 
      member private this.CalculateVWAP (tickDate : DateTime, period) = 
       let rangePrices = ticksToday.ToArray() |> Array.filter (fun x -> x.Date <= tickDate.AddDays(-period)) 
-      if rangePrices.Length > 0 then calculator.VWAP(PSeq.toArray rangePrices)
+      if rangePrices.Length > 0 then calculator.VWAP(Seq.toArray rangePrices)
       else 0M
 
      /// Makes a trade
@@ -76,7 +76,7 @@ module AlgoTrader =
          if calcVwap > 1M then
 
           // Shares limit to buy/sell per trade.
-          let numOfShares = floor (portfolio.Cash / calcVwap)
+          let numOfShares = 100M
 
           // SHORT
           /// if the stocks price less than the vwap by 0.5% and the limit has not been exceeded.

@@ -55,7 +55,7 @@ module AlgoBackTester =
    let minLimit = - portfolio.Cash * 0.5M  // must be negative, used for short positions.
    let maxLimit = portfolio.Cash + 0.1M    // must be postive, used for long positions.
    let coverAfter = 1.0                    // Days to cover any open positions after.
-   let vwapPeriod = 2.0                    // Period of days to use to calculate vwap.
+   let vwapPeriod = 1.0                    // Period of days to use to calculate vwap. (5.0 ideal for interday, 1.0 for minute tick data)
 
    // Execute trading algorithm on the historical data.
    prices 
