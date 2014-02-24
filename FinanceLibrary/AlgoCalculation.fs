@@ -5,27 +5,18 @@ module AlgoCalculation =
     open FinanceLibrary.Records
     
     /// Financial Calculations
-    type Calculation(prices) = 
+    type Calculation() = 
         class
-            
             // Calculated using mean high low close.
-            let volumeWeightedAvgPrice (prices : seq<Tick>) (period : float) = 
-                let pricesInRange = 
-                    let prices = prices |> Seq.toArray
-                    prices 
-                    |> Array.filter (fun x -> x.Date >= prices.[prices.GetUpperBound(0)].Date.AddDays(-period))
-                
+            let volumeWeightedAvgPrice (prices : array<Tick>) = 
                 let rec SumTradePriceVolume sum volSum counter = 
-                    let limit = pricesInRange.Length
+                    let limit = prices.Length
                     if counter < limit then 
-                        let tick = pricesInRange.[counter]
+                        let tick = prices.[counter]
                         let tickPrice = (tick.High + tick.Low + tick.Close) / 3.0M
                         SumTradePriceVolume (sum + tickPrice * tick.Volume) (volSum + tick.Volume) (counter + 1)
                     else sum / volSum
-                
                 SumTradePriceVolume 0M 0M 0
-            
             /// Volume Weighted Average Price
-            member this.VWAP(period) = volumeWeightedAvgPrice prices period
-
+            member this.VWAP(prices) = volumeWeightedAvgPrice prices
         end

@@ -45,11 +45,9 @@ module Records =
     ShortVwap:decimal
     LongVwap:decimal
     VwapPeriod: float
-    Vwap:decimal
     CoverBarrierPrice:decimal
     MinLimit:decimal
     MaxLimit:decimal
-    NumShares:decimal
     CoverAfterDays:float }
 
 module Interfaces =

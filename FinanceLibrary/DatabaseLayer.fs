@@ -16,7 +16,7 @@ module DatabaseLayer =
  type dbSchema = SqlDataConnection<"Data Source=.;Initial Catalog=AlgorithmicTrading;Integrated Security=True">
 
  let dataToIterationTable data = 
-  let log,ct,cv,ds,ed = data
+  let log,ds,ed = data
   let table = new dbSchema.ServiceTypes.Portfolio_Iterations()
   table.IterationId <- Guid.NewGuid()
   table.Symbol <- log.Variables.Symbol
@@ -38,14 +38,10 @@ module DatabaseLayer =
   table.ShortVwap <- log.Variables.ShortVwap 
   table.LongVwap <- log.Variables.LongVwap 
   table.VwapPeriod <- log.Variables.VwapPeriod 
-  table.Vwap <- log.Variables.Vwap 
   table.CoverBarrierPrice <- log.Variables.CoverBarrierPrice 
   table.MinLimit <- log.Variables.MinLimit 
   table.MaxLimit <- log.Variables.MaxLimit 
-  table.NumShares <- log.Variables.NumShares 
   table.CoverAfterDays <- log.Variables.CoverAfterDays 
-  table.ConstantValue <- cv
-  table.ConstantType <- ct
   table
 
  type GetStockDataDB() = 
@@ -81,11 +77,11 @@ module DatabaseLayer =
    db.DataContext.Log <- System.Console.Out
 
   /// Writes iteration data results to database.
-  member this.InsertIterationData (data: Log*string*decimal*DateTime*DateTime) = 
+  member this.InsertIterationData (data: Log*DateTime*DateTime) = 
    iterationTable.InsertOnSubmit(dataToIterationTable data)
 
   /// Writes iteration data results to database.
-  member this.InsertIterationData (data : System.Collections.Generic.IEnumerable<Log*string*decimal*DateTime*DateTime>) = 
+  member this.InsertIterationData (data : System.Collections.Generic.IEnumerable<Log*DateTime*DateTime>) = 
    let newData = [ for i in data -> dataToIterationTable i ]
    iterationTable.InsertAllOnSubmit(newData)
 
