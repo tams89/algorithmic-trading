@@ -49,13 +49,13 @@ module AlgoBackTester =
    let trader = new Trader(symbol, portfolio, finCalc)
 
    // ALGORITHM VARIABLES.
-   let shortVwap = 0.995M                // percentage of vwap to allow short position. (default = 0.998M / 0.1% less than vwap)
-   let longVwap = 1.005M                 // percentage of vwap to allow long position. (default = 1.100M / 1% greater than vwap)
-   let coverBarrier = 0.995M             // percentage of current price to begin covering at. (default 0.99M)
-   let minLimit = - portfolio.Cash       // must be negative, used for short positions.
-   let maxLimit = portfolio.Cash + 0.1M  // must be postive, used for long positions.
-   let coverAfter = 1.0                  // Days to cover any open positions after.
-   let vwapPeriod = 5.0                  // Period of days to use to calculate vwap.
+   let shortVwap = 0.995M                  // percentage of vwap to allow short position. (default = 0.998M / 0.1% less than vwap)
+   let longVwap = 1.005M                   // percentage of vwap to allow long position. (default = 1.100M / 1% greater than vwap)
+   let coverBarrier = 0.995M               // percentage of current price to begin covering at. (default 0.99M)
+   let minLimit = - portfolio.Cash * 0.5M  // must be negative, used for short positions.
+   let maxLimit = portfolio.Cash + 0.1M    // must be postive, used for long positions.
+   let coverAfter = 1.0                    // Days to cover any open positions after.
+   let vwapPeriod = 5.0                    // Period of days to use to calculate vwap.
 
    // Execute trading algorithm on the historical data.
    prices 
