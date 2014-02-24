@@ -37,7 +37,7 @@ module Records =
        Quantity : decimal
        OrderType : OrderType
        Value : decimal }
-     override this.ToString() = sprintf "%A, %A, %A, %A, %A" this.Symbol this.Date this.Quantity this.OrderType this.Value
+     override this.ToString() = sprintf "Symbol %A Date %A Quantity %A Type %A" this.Symbol this.Date this.Quantity this.OrderType 
 
  type Variables = 
   { Symbol:string
