@@ -84,10 +84,7 @@ module AlgoBackTester =
   let addToLog (log : Log, startDate, endDate) =
    logRecs.Add(log, startDate, endDate)
 
-  let iterationRange = [ 0M..0.005M..2M ]
-  let totalLength = iterationRange.Length
-
-  iterationRange
+  [ 0M ]
   |> PSeq.ordered
   |> PSeq.iter (fun i -> 
      ((executeRun i), prices.[0].Date, prices.[prices.Length - 1].Date)
