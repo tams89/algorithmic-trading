@@ -56,7 +56,8 @@ module AlgoTrader =
                     Value = - quantity * price; }
       
       portfolio.AddPosition(orderRecord)
-
+     
+     /// Closes a position.
      member private this.ClosePosition(order) = portfolio.ClosePosition(order)
 
      /// THE ALGORITHM
@@ -72,6 +73,7 @@ module AlgoTrader =
          // Calculate the latest Volume-Weighted-Average-Price.
          let calcVwap = this.CalculateVWAP(tick.Date, vwapPeriod)
 
+         // Will not execute any trades until vwap is present. 
          if calcVwap > 1M then 
 
           // Shares limit to buy/sell.
