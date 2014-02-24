@@ -23,6 +23,12 @@ module AlgoTrader =
      // Field containing previous 10 ticks.
      let ticksToday = new System.Collections.Concurrent.ConcurrentQueue<Tick>()
 
+     // Get the latest tick.
+     let lastTick = 
+      let ticks = ticksToday.ToArray()
+      if ticks.Length > 1 then Some ticks.[0]
+      else None
+
      // Allows the addition of a tick to the queue.
      member private this.AddTickToQueue(tick) = 
        if ticksToday.Count >= 10 then ignore(ticksToday.TryDequeue(ref tick))
@@ -73,8 +79,9 @@ module AlgoTrader =
          // Calculate the latest Volume-Weighted-Average-Price.
          let calcVwap = this.CalculateVWAP(tick.Date, vwapPeriod)
 
-         // Will not execute any trades until vwap is present. 
-         if calcVwap > 1M then 
+         // Will not execute any trades until vwap is present and will only trade once a day.
+         if (calcVwap > 1M && lastTick.IsSome && tick.Date.Date > lastTick.Value.Date.Date) ||
+            (calcVwap > 1M && lastTick.IsNone) then 
 
           // Shares limit to buy/sell.
           let numOfShares = floor (portfolio.Cash / calcVwap)

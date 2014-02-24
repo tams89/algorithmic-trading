@@ -32,11 +32,11 @@ module AlgoBackTester =
   let logRecs = new System.Collections.Generic.List<Log*DateTime*DateTime>()
  
   // Set data variables.
-  let symbol = "MSFT"                                                             // Get historical stock prices for the symbol.
-  let backTestPeriod = 3000                                                       // Previous days worth of historical data to obtain.
-  let logger = new WriteIterationData()                                           // Database logging service.
-  let stockService = new GetStockDataWeb() :> IStockService                       // Historical data service.
-  let prices =                                                                    // Obtain historical data.
+  let symbol = "MSFT"                                                              // Get historical stock prices for the symbol.
+  let backTestPeriod = 10000                                                       // Previous days worth of historical data to obtain.
+  let logger = new WriteIterationData()                                            // Database logging service.
+  let stockService = new GetStockDataWeb() :> IStockService                        // Historical data service.
+  let prices =                                                                     // Obtain historical data.
    List.toArray (cleanPrices (stockService.GetStockPrices symbol backTestPeriod))
 
   let executeRun iterate = 

@@ -51,16 +51,16 @@ module DatabaseLayer =
          db.DataContext.Log <- System.Console.Out
      
      let fetchData (symbol : string) (daysBack : int) = 
-         query { for row in db.InterDay_HistoricalStock do
+         query { for row in db.HFT_Tick do
                  where (row.Symbol = symbol && row.Date >= DateTime.Today.AddDays(float(-daysBack)))
                  sortBy row.Date
                  select row }
          |> Seq.map (fun x -> 
                 { Date = x.Date
-                  Open = x.Open
-                  High = x.High
-                  Low = x.Low
-                  Close = x.Close
+                  Open = decimal x.Open
+                  High = decimal x.High
+                  Low = decimal x.Low
+                  Close = decimal x.Close
                   Volume = (decimal x.Volume)
                   AdjClose = 0M })
          |> Seq.toArray
