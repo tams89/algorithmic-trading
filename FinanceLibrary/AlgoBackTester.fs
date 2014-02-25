@@ -32,10 +32,10 @@ module AlgoBackTester =
   let logRecs = new System.Collections.Generic.List<Log*DateTime*DateTime>()
  
   // Set data variables.
-  let symbol = "IBM Minute"                                                       // Get historical stock prices for the symbol.
+  let symbol = "IBM"                                                              // Get historical stock prices for the symbol.
   let backTestPeriod = 10000                                                      // Previous days worth of historical data to obtain.
-  let logger = new WriteIterationData()                                           // Database logging service.
-  let stockService = new GetStockDataDB() :> IStockService                        // Historical data service.
+  let db = new Database()                                                         // Database service.
+  let stockService = new GetStockDataWeb() :> IStockService                       // Historical data service.
   let prices =                                                                    // Obtain historical data.
    List.toArray (cleanPrices (stockService.GetStockPrices symbol backTestPeriod))
 
@@ -94,7 +94,10 @@ module AlgoBackTester =
      |> addToLog)
      
   // Insert collection of log data to database.
-  logger.InsertIterationData(logRecs)
-  logger.Commit()
-  
+  logRecs 
+  |> Seq.iter (fun (i,_,_) -> 
+     db.InsertOrders(i.Portfolio.Positions, false)
+     db.InsertOrders(i.Portfolio.ClosedPositions, true))
+  db.Commit()
+
   printfn "Algorithm Ended."

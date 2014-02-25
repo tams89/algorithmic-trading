@@ -1,7 +1,9 @@
 ﻿namespace FinanceLibrary
 
 module Records = 
+
  open System
+
  type Tick = 
      { Date : DateTime
        Open : decimal

@@ -13,11 +13,11 @@ module DatabaseLayer =
    { Portfolio:Portfolio
      Variables:Variables }
 
- type dbSchema = SqlDataConnection<"Data Source=.;Initial Catalog=AlgorithmicTrading;Integrated Security=True">
+ type dbSchema = SqlDataConnection<"Data Source=.;Initial Catalog=SivaguruCapital;Integrated Security=True">
 
  let dataToIterationTable data = 
   let log,ds,ed = data
-  let table = new dbSchema.ServiceTypes.Portfolio_Iterations()
+  let table = new dbSchema.ServiceTypes.Portfolio_Iteration()
   table.IterationId <- Guid.NewGuid()
   table.Symbol <- log.Variables.Symbol
   table.StartDate <- ds
@@ -44,35 +44,25 @@ module DatabaseLayer =
   table.CoverAfterDays <- log.Variables.CoverAfterDays 
   table
 
- type GetStockDataDB() = 
-     let db = dbSchema.GetDataContext()
-     do 
-         // Enable SQL logging to console.
-         db.DataContext.Log <- System.Console.Out
-     
-     let fetchData (symbol : string) (daysBack : int) = 
-         query { for row in db.HFT_Tick do
-                 where (row.Symbol = symbol && row.Date >= DateTime.Today.AddDays(float(-daysBack)))
-                 sortBy row.Date
-                 select row }
+ let orderToOrderTable (data : Order, isClosed : bool) = 
+  let table = new dbSchema.ServiceTypes.Portfolio_Order()
+  table.OrderId <- Guid.NewGuid()
+  table.Symbol <- data.Symbol
+  table.Date <- data.Date
+  table.Quantity <- data.Quantity
+  table.OrderType <- data.OrderType.ToString()
+  table.Value <- data.Value
+  match isClosed with
+  | true -> table.IsClosed <- true
+  | false -> table.IsClosed <- false
+  table
 
-         |> Seq.map (fun x -> 
-                { Date = x.Date
-                  Open = decimal x.Open
-                  High = decimal x.High
-                  Low = decimal x.Low
-                  Close = decimal x.Close
-                  Volume = (decimal x.Volume)
-                  AdjClose = 0M })
-         |> Seq.toArray
+ type Database () = 
 
-     interface IStockService with
-         member this.GetStockPrices symbol daysBack = fetchData symbol daysBack
- 
- /// Allows writing of data to iteration table.
- type WriteIterationData () = 
   let db = dbSchema.GetDataContext()
-  let iterationTable = db.Portfolio_Iterations
+  let iterationTable = db.Portfolio_Iteration
+  let orderTable = db.Portfolio_Order
+
   do 
    // Enable SQL logging to console.
    db.DataContext.Log <- System.Console.Out
@@ -85,10 +75,35 @@ module DatabaseLayer =
   member this.InsertIterationData (data : System.Collections.Generic.IEnumerable<Log*DateTime*DateTime>) = 
    let newData = [ for i in data -> dataToIterationTable i ]
    iterationTable.InsertAllOnSubmit(newData)
+  
+  /// Writes order to database.
+  member this.InsertOrder (data : Order, isClosed : bool) =
+   orderTable.InsertOnSubmit(orderToOrderTable(data,isClosed))
+
+  /// Writes orders to database.
+  member this.InsertOrders (data : System.Collections.Generic.IEnumerable<Order>, isClosed : bool) =
+   let newData = [ for i in data -> orderToOrderTable(i,isClosed) ]
+   orderTable.InsertAllOnSubmit(newData)
 
   /// Commits any open transactions.
   member this.Commit () = 
    try
-    db.Portfolio_Iterations.Context.SubmitChanges()
+    db.Portfolio_Iteration.Context.SubmitChanges()
    with
     | exn -> printfn "Exception: \n%s" exn.Message
+
+  interface IStockService with
+   // Query to fetch all HFT.Tick datwhere within date range and has matching symbol.
+   member this.GetStockPrices symbol daysBack = 
+      query { for row in db.HFT_Tick do
+              where (row.Symbol = symbol && row.Date >= DateTime.Today.AddDays(float(-daysBack)))
+              sortBy row.Date 
+              select row }
+      |> Seq.map (fun x -> 
+          { Date = x.Date
+            Open = decimal x.Open
+            High = decimal x.High
+            Low = decimal x.Low
+            Close = decimal x.Close
+            Volume = (decimal x.Volume)
+            AdjClose = 0M }) |> Seq.toArray
