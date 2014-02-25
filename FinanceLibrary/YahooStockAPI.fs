@@ -6,7 +6,7 @@ module Stock =
     open FinanceLibrary.Records
     open FinanceLibrary.Interfaces
     
-    type GetStockDataWeb() = 
+    type StockDataService() = 
         let url = "http://ichart.finance.yahoo.com/table.csv?s="
         
         /// Returns prices (as tuple) of a given stock for a 

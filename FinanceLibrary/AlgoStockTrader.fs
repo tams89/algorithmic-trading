@@ -76,7 +76,9 @@ module AlgoTrader =
          if calcVwap > 1M then
 
           // Shares limit to buy/sell per trade.
-          let numOfShares = decimal(sqrt(float(tick.Volume)))
+//          let numOfShares = decimal(sqrt(float(tick.Volume)))
+          // Allows major increase in returns, wonder if real market will be liquid enough for the larger transactions.
+          let numOfShares = tick.Volume * 0.5M
 
           // SHORT
           /// if the stocks price less than the vwap by 0.5% and the limit has not been exceeded.
