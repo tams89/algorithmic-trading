@@ -87,7 +87,7 @@ module AlgoPortfolio =
   member this.PortfolioValue 
    with get() = this.Cash + this.PositionsValue
 
-  /// Cumulative percentage returns for entire portfolio up until now. Pentage gain or loss of start cash.
+  /// Cumulative percentage returns for entire portfolio up until now. Percentage gain or loss of start cash.
   member this.Returns
    with get() = this.ProfitAndLoss / startingCash
 

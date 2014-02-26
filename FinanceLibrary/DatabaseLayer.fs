@@ -39,8 +39,6 @@ module DatabaseLayer =
   table.LongVwap <- log.Variables.LongVwap 
   table.VwapPeriod <- log.Variables.VwapPeriod 
   table.CoverBarrierPrice <- log.Variables.CoverBarrierPrice 
-  table.MinLimit <- log.Variables.MinLimit 
-  table.MaxLimit <- log.Variables.MaxLimit 
   table.CoverAfterDays <- log.Variables.CoverAfterDays 
   table
 
@@ -71,7 +69,7 @@ module DatabaseLayer =
 
   do 
    // Enable SQL logging to console.
-   db.DataContext.Log <- System.Console.Out
+   db.Portfolio_Iteration.Context.Log <- System.Console.Out
 
   /// Writes iteration data results to database.
   member this.InsertIterationData (data: Log*DateTime*DateTime) = 

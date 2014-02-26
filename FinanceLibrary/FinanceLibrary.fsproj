@@ -65,6 +65,7 @@
     <Compile Include="RecordsNInterfaces.fs" />
     <Compile Include="YahooOptionAPI.fs" />
     <Compile Include="YahooStockAPI.fs" />
+    <Compile Include="AlgoMarket.fs" />
     <Compile Include="AlgoCalculation.fs" />
     <Compile Include="AlgoPortfolio.fs" />
     <Compile Include="DatabaseLayer.fs" />
@@ -111,6 +112,18 @@
     </Reference>
     <Reference Include="FSharp.PowerPack.Parallel.Seq">
       <HintPath>..\packages\FSPowerPack.Parallel.Seq.Community.3.0.0.0\Lib\Net40\FSharp.PowerPack.Parallel.Seq.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MathNet.Numerics">
+      <HintPath>..\packages\MathNet.Numerics.2.6.2\lib\net40\MathNet.Numerics.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MathNet.Numerics.FSharp">
+      <HintPath>..\packages\MathNet.Numerics.FSharp.2.6.0\lib\net40\MathNet.Numerics.FSharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MathNet.Numerics.IO">
+      <HintPath>..\packages\MathNet.Numerics.2.6.2\lib\net40\MathNet.Numerics.IO.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="mscorlib" />

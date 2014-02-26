@@ -48,8 +48,6 @@ module Records =
     LongVwap:decimal
     VwapPeriod: float
     CoverBarrierPrice:decimal
-    MinLimit:decimal
-    MaxLimit:decimal
     CoverAfterDays:float }
 
 module Interfaces =
@@ -60,3 +58,5 @@ module Interfaces =
  
  type IOptionService = 
      abstract GetOptionTable : string -> OptionsData list
+ 
+ 
