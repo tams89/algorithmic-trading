@@ -42,9 +42,9 @@ module AlgoBackTester =
    List.toArray (cleanPrices (stockService.GetStockPrices symbol backTestPeriod))
 
   let executeRun iterate = 
-   
+
    // Instantiate system components.
-   let startingCash = 20000M      // Portfolio starting capital.
+   let startingCash = 10000M      // Portfolio starting capital.
    let startDate = DateTime.Today // Portfolio creation date. 
    let simulateSlippage = false   // Should price slippage be simulated?
    let portfolio = new Portfolio(startingCash, startDate)

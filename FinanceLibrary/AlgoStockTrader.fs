@@ -71,13 +71,13 @@ module AlgoTrader =
          // For large orders the order could chunked into smaller pieces with a delay between each order. 
          let numOfShares = 
           match calcVwap with
-          | x when x > 0M -> List.min [ (tick.Volume * 0.1M); (portfolio.Cash / calcVwap) ]
+          | x when x > 0M -> floor (List.min [ (tick.Volume * 0.1M); (portfolio.Cash / calcVwap) ])
           | _ -> 0M
 
          if numOfShares > 1M then
           
-          // Calculate maximum order value available.
-          let cashLimit = portfolio.Cash > floor(numOfShares * currentPrice)
+          // Calculate maximum order capital available.
+          let cashLimit = portfolio.Cash > ceil(numOfShares * currentPrice)
 
           // SHORT
           /// if the stocks price less than the vwap by 0.5% and the limit has not been exceeded.
@@ -110,5 +110,5 @@ module AlgoTrader =
            portfolio.LongPositions 
            |> Seq.filter (fun x -> x.Date.AddDays(coverAfter) > tick.Date)
            |> Seq.iter (fun long -> this.ClosePosition(long))
-
+          
     end
