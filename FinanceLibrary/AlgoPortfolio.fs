@@ -61,7 +61,9 @@ module AlgoPortfolio =
      match order.OrderType with 
      | Long -> order.Quantity * currentPrice
      | _ -> order.Value
-    this.Positions |> Seq.sumBy (fun x -> positionValue x)
+    this.Positions |> Seq.toList 
+    |> Seq.map (fun x -> positionValue x)
+    |> Seq.fold (+) 0M
 
   /// Value of all short positions.
   /// http://fundmanagersoftware.com/help/short_positions.html
@@ -72,16 +74,19 @@ module AlgoPortfolio =
   /// Value of all closed positions.
   member this.ClosedPositionsValue
    with get() = 
-    let closedPositionValue (order:Order) = 
-     match order.OrderType with 
-     | Cover -> order.Value // should be negative always.
-     | _ -> abs(order.Value) // should always be positive
-    (this.ClosedPositions |> Seq.sumBy (fun x -> closedPositionValue x))
+    let price e = 
+     match e.OrderType with
+     | Cover -> e.Value
+     | _ -> abs(e.Value)
+    this.ClosedPositions |> Seq.toList 
+    |> Seq.map (fun x -> price x)
+    |> Seq.fold (+) 0M
   
   /// Value of all closed short positions.
   member this.ClosedShortPositionsValue
    with get() = this.ClosedShortPositions
-    |> Seq.sumBy (fun x -> abs x.Value)
+    |> Seq.map (fun x -> abs x.Value)
+    |> Seq.fold (+) 0M
 
   /// Sum of positionsValue and cash.
   member this.PortfolioValue 

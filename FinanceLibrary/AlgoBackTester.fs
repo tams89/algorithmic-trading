@@ -32,14 +32,15 @@ module AlgoBackTester =
  let backTest() = 
   let logRecs = new System.Collections.Generic.List<Log*DateTime*DateTime>()
  
-  // Set data variables.
-  let symbol = "IBM Minute"                                                             // Get historical stock prices for the symbol.
-  let backTestPeriod = 600                                                        // Previous days worth of historical data to obtain. (252 trading days per year)
-  let db = new Database()                                                         // Database service.
-  let stockService = new Database() :> IStockService                            // Historical data service.
-//  let stockService = new StockDataService() :> IStockService                      // Historical data service.
-  let prices =                                                                    // Obtain historical data.
-   List.toArray (cleanPrices (stockService.GetStockPrices symbol backTestPeriod))
+  // Set data variables.                                            
+  let symbol = "IBM Minute"                                         // Get historical stock prices for the symbol.
+  let backTestPeriod = 600                                          // Previous days worth of historical data to obtain. (252 trading days per year)
+  let db = new Database()                                           // Database service.
+  let stockService = new Database() :> IStockService                // Historical data service.
+//  let stockService = new StockDataService() :> IStockService      // Historical data service.
+  let prices =                                                      // Obtain historical data.
+   cleanPrices (stockService.GetStockPrices symbol backTestPeriod)
+   |> List.toArray
 
   let executeRun iterate = 
 
@@ -94,11 +95,13 @@ module AlgoBackTester =
      |> addToLog)
      
   // Insert collected data to database.
+  printfn "Inserting Data..."
   for data,sd,ed in logRecs do
    let tData = data,sd,ed
    let id = db.InsertIterationData(tData)
    db.InsertOrders(data.Portfolio.Positions, false, id)
    db.InsertOrders(data.Portfolio.ClosedPositions, true, id)
   db.Commit()
+  printfn "Data inserted..."
 
   printfn "Algorithm Ended."

@@ -67,9 +67,8 @@ module DatabaseLayer =
   let iterationTable = db.Portfolio_Iteration
   let orderTable = db.Portfolio_Order
 
-  do 
-   // Enable SQL logging to console.
-   db.Portfolio_Iteration.Context.Log <- System.Console.Out
+  do
+   db.DataContext.Log <- Console.Out
 
   /// Writes iteration data results to database.
   member this.InsertIterationData (data: Log*DateTime*DateTime) = 

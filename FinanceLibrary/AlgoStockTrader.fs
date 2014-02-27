@@ -30,18 +30,19 @@ module AlgoTrader =
        ticksToday.Enqueue(tick)
 
      member private this.CalculateVWAP (tickDate : DateTime, period) = 
-      let rangePrices = ticksToday.ToArray() |> Array.filter (fun x -> x.Date <= tickDate.AddDays(-period)) 
-      if rangePrices.Length > 0 then calculator.VWAP(Seq.toArray rangePrices)
-      else 0M
+      let rangePrices = ticksToday |> Seq.filter (fun x -> x.Date <= tickDate.AddDays(-period))
+      calculator.VWAP(rangePrices |> Seq.toArray)
 
      /// Makes a trade
      member private this.PlaceOrder(tick : Tick, quantity, price, orderType) = 
       
       let orderRecord = 
+       let order symbol date quantity orderType value = 
+        { Symbol = symbol; Date = date; Quantity = quantity; OrderType = orderType; Value = value  } 
        match orderType with
-       | Long -> { Symbol = symbol; Date = tick.Date; Quantity = quantity; OrderType = Long; Value = quantity * price; }
-       | Short -> { Symbol = symbol; Date = tick.Date; Quantity = - quantity; OrderType = Short; Value = - quantity * price; }
-       | Cover -> { Symbol = symbol; Date = tick.Date; Quantity = quantity; OrderType = Cover; Value = - quantity * price; }
+       | Long -> order symbol tick.Date quantity Long (quantity * price)
+       | Short -> order symbol tick.Date (-quantity) Short (- quantity * price)
+       | Cover -> order symbol tick.Date (quantity) Cover (- quantity * price)
 
       match market.PricesShouldSlip with 
       | true -> let slipped = market.GenerateSlippage(orderRecord, tick) 

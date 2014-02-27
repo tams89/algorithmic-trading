@@ -9,14 +9,12 @@ module AlgoCalculation =
         class
             // Calculated using mean high low close.
             let volumeWeightedAvgPrice (prices : array<Tick>) = 
-                let rec SumTradePriceVolume sum volSum counter = 
-                    let limit = prices.Length
-                    if counter < limit then 
-                        let tick = prices.[counter]
-                        let tickPrice = (tick.High + tick.Low + tick.Close) / 3.0M
-                        SumTradePriceVolume (sum + tickPrice * tick.Volume) (volSum + tick.Volume) (counter + 1)
-                    else sum / volSum
-                SumTradePriceVolume 0M 0M 0
+             if Seq.isEmpty prices then 0M 
+             else
+              let tickPrices = prices |> Array.map (fun tick -> (tick.High + tick.Low + tick.Close) / 3.0M) 
+              let tickVols = prices |> Array.map (fun tick -> tick.Volume) 
+              Array.foldBack2 (fun acc vol price -> acc + (price / vol)) tickPrices tickVols 0M
+
             /// Volume Weighted Average Price
             member this.VWAP(prices) = volumeWeightedAvgPrice prices
         end
