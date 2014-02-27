@@ -34,7 +34,7 @@ module AlgoBackTester =
  
   // Set data variables.                                            
   let symbol = "IBM Minute"                                         // Get historical stock prices for the symbol.
-  let backTestPeriod = 600                                          // Previous days worth of historical data to obtain. (252 trading days per year)
+  let backTestPeriod = 10000                                          // Previous days worth of historical data to obtain. (252 trading days per year)
   let db = new Database()                                           // Database service.
   let stockService = new Database() :> IStockService                // Historical data service.
 //  let stockService = new StockDataService() :> IStockService      // Historical data service.

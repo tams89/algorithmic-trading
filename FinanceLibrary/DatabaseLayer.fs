@@ -25,10 +25,10 @@ module DatabaseLayer =
   table.StartingCash <- log.Portfolio.StartingCash 
   table.CurrentCash <- log.Portfolio.Cash 
   table.PortfolioValue <- log.Portfolio.PortfolioValue 
-  table.CurrentPositions <- log.Portfolio.Positions.Count
-  table.ShortPositions <- (log.Portfolio.ShortPositions |> Seq.length) 
-  table.ClosedPositions <- log.Portfolio.ClosedPositions.Count 
-  table.ClosedShortPositions <- (log.Portfolio.ClosedShortPositions |> Seq.length) 
+  table.CurrentPositions <- log.Portfolio.Positions.Length
+  table.ShortPositions <- (log.Portfolio.ShortPositions.Length) 
+  table.ClosedPositions <- log.Portfolio.ClosedPositions.Length
+  table.ClosedShortPositions <- (log.Portfolio.ClosedShortPositions.Length) 
   table.PositionValue <- log.Portfolio.PositionsValue 
   table.ShortPositionValue <- log.Portfolio.ShortPositionsValue 
   table.ClosedPositionValue <- log.Portfolio.ClosedPositionsValue 
