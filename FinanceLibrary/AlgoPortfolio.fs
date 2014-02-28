@@ -34,7 +34,7 @@ module AlgoPortfolio =
   /// List of all positions.
   member this.Positions
    with get() = positions
-    |> Seq.toArray
+    |> Seq.cache
 
   /// List of all closed positions.
   member this.ClosedPositions
