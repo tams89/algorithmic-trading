@@ -39,22 +39,21 @@ module AlgoPortfolio =
   /// List of all closed positions.
   member this.ClosedPositions
    with get() = closedPositions
-    |> Seq.toArray
 
   /// Long positions.
   member this.LongPositions
    with get() = this.Positions
-    |> Array.filter (fun x -> x.OrderType = Long) 
+    |> Seq.filter (fun x -> x.OrderType = Long) 
  
   /// Short positions.
   member this.ShortPositions
    with get() = this.Positions 
-    |> Array.filter (fun x -> x.OrderType = Short) 
+    |> Seq.filter (fun x -> x.OrderType = Short) 
 
   /// Closed Short Positions
   member this.ClosedShortPositions
    with get() = this.ClosedPositions
-    |> Array.filter (fun x -> x.OrderType = Short)
+    |> Seq.filter (fun x -> x.OrderType = Short)
 
   /// Total value of all open positions at the current time.
   member this.PositionsValue
@@ -64,32 +63,30 @@ module AlgoPortfolio =
      | Long -> order.Quantity * currentPrice
      | _ -> order.Value
     this.Positions
-    |> Array.map (fun x -> positionValue x)
-    |> Array.fold (+) 0M
+    |> Seq.map (fun x -> positionValue x)
+    |> Seq.fold (+) 0M
 
   /// Value of all short positions.
   /// http://fundmanagersoftware.com/help/short_positions.html
   member this.ShortPositionsValue
    with get() = this.ShortPositions 
-    |> Array.sumBy (fun x -> x.Value)
+    |> Seq.sumBy (fun x -> x.Value)
   
   /// Value of all closed positions.
   member this.ClosedPositionsValue
    with get() = 
-    let closedPositions = this.ClosedPositions |> Seq.toArray 
-    let price e = 
-     match e.OrderType with
-     | Cover -> e.Value
-     | _ -> abs(e.Value)
-    closedPositions
-    |> Array.map (fun x -> price x)
-    |> Array.fold (+) 0M
+    let positionValue (order:Order) = 
+     match order.OrderType with 
+     | Cover -> order.Value
+     | _ -> abs order.Value
+    this.ClosedPositions
+    |> Seq.sumBy (fun x -> positionValue x)
   
   /// Value of all closed short positions.
   member this.ClosedShortPositionsValue
    with get() = this.ClosedShortPositions
-    |> Array.map (fun x -> abs x.Value)
-    |> Array.fold (+) 0M
+    |> Seq.map (fun x -> abs x.Value)
+    |> Seq.fold (+) 0M
 
   /// Sum of positionsValue and cash.
   member this.PortfolioValue 

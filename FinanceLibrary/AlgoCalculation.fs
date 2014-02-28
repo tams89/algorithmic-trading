@@ -9,7 +9,7 @@ module AlgoCalculation =
         class
             // Calculated using mean high low close.
             let volumeWeightedAvgPrice (prices : array<Tick>) = 
-             if Seq.isEmpty prices then 0M 
+             if Array.isEmpty prices then 0M 
              else
               let tickPrices = prices |> Array.map (fun tick -> (tick.High + tick.Low + tick.Close) / 3.0M) 
               let tickVols = prices |> Array.map (fun tick -> tick.Volume) 
