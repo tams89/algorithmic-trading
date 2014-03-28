@@ -66,9 +66,9 @@
       <Name>FinanceLibrary</Name>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </ProjectReference>
-    <ProjectReference Include="..\TradingCore\TradingCore.csproj">
+    <ProjectReference Include="..\TradingCore\Core.csproj">
       <Project>{ec23fcb3-67c9-47cb-80fe-eb91343fb7ae}</Project>
-      <Name>TradingCore</Name>
+      <Name>Core</Name>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </ProjectReference>
   </ItemGroup>

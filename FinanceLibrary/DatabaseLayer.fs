@@ -99,9 +99,25 @@ module DatabaseLayer =
 
   interface IStockService with
    // Query to fetch all HFT.Tick datwhere within date range and has matching symbol.
-   member this.GetStockPrices symbol daysBack = 
+   /// Stock prices for number of days before today.
+   member this.GetPreviousStockPrices symbol daysBack = 
       query { for row in db.HFT_Tick do
               where (row.Symbol = symbol && row.Date >= DateTime.Today.AddDays(float(-daysBack)))
+              sortBy row.Date 
+              select row }
+      |> Seq.map (fun x -> 
+          { Date = x.Date
+            Open = decimal x.Open
+            High = decimal x.High
+            Low = decimal x.Low
+            Close = decimal x.Close
+            Volume = (decimal x.Volume)
+            AdjClose = 0M }) |> Seq.toArray
+
+       /// Stock prices for number of days before today.
+   member this.GetStockPrices symbol numRecs = 
+      query { for row in db.HFT_Tick do 
+              where (row.Symbol = symbol && row.Date >= query { for row in db.HFT_Tick do maxBy (row.Date.AddDays(float(-numRecs))) } )
               sortBy row.Date 
               select row }
       |> Seq.map (fun x -> 

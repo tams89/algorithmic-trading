@@ -35,5 +35,7 @@ module Stock =
             |> Array.rev
         
         interface IStockService with
+            member this.GetPreviousStockPrices symbol daysBack = 
+                getStockPrices symbol daysBack
             member this.GetStockPrices symbol daysBack = 
                 getStockPrices symbol daysBack

@@ -25,7 +25,6 @@ namespace TradingCore.Repository
             get
             {
                 return new SqlConnection(Configuration.AlgoTraderDBConStr);
-
             }
         }
 

@@ -25,3 +25,10 @@ FROM Portfolio.[Order] A
   ON A.IterationId = B.IterationId
 GROUP BY Date
 ORDER BY COUNT(DATE) DESC
+
+SELECT O.Date, O.Quantity, O.Value
+FROM SivaguruCapital.Portfolio.[Order] O
+INNER JOIN SivaguruCapital.Portfolio.Iteration I
+ON O.IterationId = I.IterationId
+WHERE I.IterationId = '36EC880C-0C15-4F2C-8904-56E3EC434D88'
+ORDER BY Date

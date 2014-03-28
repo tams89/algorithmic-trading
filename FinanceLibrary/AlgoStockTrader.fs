@@ -76,7 +76,7 @@ module AlgoTrader =
           | _ -> 0M
 
          if numOfShares > 1M then
-          
+
           // Calculate maximum order capital available.
           let cashLimit = portfolio.Cash > ceil(numOfShares * currentPrice)
 

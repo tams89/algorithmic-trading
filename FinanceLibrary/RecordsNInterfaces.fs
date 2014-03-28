@@ -55,6 +55,7 @@ module Interfaces =
 
  type IStockService = 
      abstract GetStockPrices : string -> int -> Tick []
+     abstract GetPreviousStockPrices : string -> int -> Tick []
  
  type IOptionService = 
      abstract GetOptionTable : string -> OptionsData list
