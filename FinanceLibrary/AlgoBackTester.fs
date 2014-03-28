@@ -30,39 +30,42 @@ module AlgoBackTester =
 
  /// Backtest using historical data to simulate returns.
  let backTest() = 
-  let logRecs = new System.Collections.Generic.List<Log*DateTime*DateTime>()
- 
+
   // Set data variables.                                            
   let symbol = "IBM Minute"                                         // Get historical stock prices for the symbol.
   let backTestPeriod = 20                                           // Previous days worth of historical data to obtain. (252 trading days per year)
   let db = new Database()                                           // Database service.
   let stockService = new Database() :> IStockService                // Historical data service (local DB).
 //  let stockService = new StockDataService() :> IStockService      // Historical data service (web).
-  let prices =                                                      // Obtain historical data.
+
+  // Instantiate system components.
+  let startingCash = 10000M      // Portfolio starting capital.
+  let startDate = DateTime.Today // Portfolio creation date. 
+  let simulateSlippage = false   // Should price slippage be simulated?
+  let portfolio = new Portfolio(startingCash, startDate)
+  let finCalc = new Calculation()
+  let market = new Market(float(backTestPeriod), simulateSlippage)
+  let trader = new Trader(symbol, portfolio, finCalc, market)
+  let logRecs = new System.Collections.Generic.List<Log*DateTime*DateTime>()
+ 
+  // ALGORITHM VARIABLES.
+  let shortVwap = 0.995M    // percentage of vwap to allow short position. (default = 0.995M)
+  let longVwap = 1.005M     // percentage of vwap to allow long position. (default = 1.005M)
+  let coverBarrier = 0.998M // percentage of current price to begin covering at. (default 0.99M)
+  let coverAfter = 1.0      // Days to cover any open positions after.
+  let vwapPeriod = 1.0      // Period of days to use to calculate vwap. (5.0 ideal for interday, 1.0 for minute tick data)
+
+  // Obtain historical data.
+  let prices =                                                     
    cleanPrices (stockService.GetStockPrices symbol backTestPeriod)
    |> List.toArray
 
   let executeRun iterate = 
 
-   // Instantiate system components.
-   let startingCash = 10000M      // Portfolio starting capital.
-   let startDate = DateTime.Today // Portfolio creation date. 
-   let simulateSlippage = false   // Should price slippage be simulated?
-   let portfolio = new Portfolio(startingCash, startDate)
-   let finCalc = new Calculation()
-   let market = new Market(float(backTestPeriod), simulateSlippage)
-   let trader = new Trader(symbol, portfolio, finCalc, market)
-
-   // ALGORITHM VARIABLES.
-   let shortVwap = 0.995M    // percentage of vwap to allow short position. (default = 0.995M)
-   let longVwap = 1.005M     // percentage of vwap to allow long position. (default = 1.005M)
-   let coverBarrier = 0.998M // percentage of current price to begin covering at. (default 0.99M)
-   let coverAfter = 1.0      // Days to cover any open positions after.
-   let vwapPeriod = 1.0      // Period of days to use to calculate vwap. (5.0 ideal for interday, 1.0 for minute tick data)
+   printfn "Algorithm Started..."
    
    // Execute trading algorithm on the historical data.
-   prices 
-   |> Seq.iter (fun tick -> trader.IncomingTick(tick, shortVwap, longVwap, coverBarrier, coverAfter, vwapPeriod))
+   prices |> Seq.iter (fun tick -> trader.IncomingTick(tick, shortVwap, longVwap, coverBarrier, coverAfter, vwapPeriod))
 
    // Return the portfolio on market close / simulation over.
    let variables = 
@@ -78,7 +81,6 @@ module AlgoBackTester =
     { Portfolio = portfolio
       Variables = variables  }
    
-   printfn "%A" iterate
    log
   
   // Store the constant iterated over, and portfolio results.
@@ -104,4 +106,4 @@ module AlgoBackTester =
   db.Commit()
   printfn "Data inserted..."
 
-  printfn "Algorithm Ended."
+  printfn "Algorithm Ended..."
