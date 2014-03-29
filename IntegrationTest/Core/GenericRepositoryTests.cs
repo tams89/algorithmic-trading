@@ -28,7 +28,7 @@ namespace Test.IntegrationTest.Core
             Assert.IsNotEmpty(data);
         }
 
-        [TestCase("IBM", true)]
+        [TestCase("IBM Minute", true)]
         [TestCase("", false)]
         [TestCase("ergeg", false)]
         public void GetBySymbol(string symbol, bool shouldPass)
