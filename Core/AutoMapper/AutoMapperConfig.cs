@@ -12,6 +12,7 @@ namespace TradingCore.AutoMapper
         public static void Configure()
         {
             Mapper.CreateMap<Tick, TickDTO>();
+            Mapper.CreateMap<HistoricalStock, HistoricalStockDTO>();
 
             Mapper.AssertConfigurationIsValid();
         }

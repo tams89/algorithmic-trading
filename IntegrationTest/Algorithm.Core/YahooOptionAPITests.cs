@@ -9,7 +9,7 @@ namespace Test.IntegrationTest.Algorithm.Core
     public class YahooOptionApiTests
     {
         [TestCase("MSFT", true)]
-        [TestCase("GOOG", true)]
+        [TestCase("GOOG", false)]
         [TestCase("", false)]
         public void GetOptionData(string symbol, bool shouldPass)
         {
