@@ -98,4 +98,6 @@ module AlgoBackTester =
    printfn "Algorithm Ended..."
   
   // Constructors
-  new () = BackTester("IBM Minute", 20, new DatabaseLayer.Database(), 10000M, false, 0.995M, 1.005M, 0.998M, 1.0, 1.0)  
+  new () = BackTester("IBM Minute", 10000, new DatabaseLayer.Database(), 10000M, false, 0.995M, 1.005M, 0.998M, 1.0, 1.0)
+  new (backtestPeriod) = BackTester("IBM Minute", backtestPeriod, new DatabaseLayer.Database(), 10000M, false, 0.995M, 1.005M, 0.998M, 1.0, 1.0)
+  new (symbol, backtestPeriod) = BackTester(symbol, backtestPeriod, new StockDataService(), 10000M, false, 0.995M, 1.005M, 0.998M, 1.0, 1.0)
