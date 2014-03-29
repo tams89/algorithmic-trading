@@ -6,14 +6,10 @@ module AlgoPortfolio =
  open Algorithm.Core.Records
 
  /// PORTFOLIO
- type Portfolio(startingCash:decimal, startDate:DateTime) = class
+ type Portfolio(startingCash : decimal) = class
   let positions = new System.Collections.Concurrent.BlockingCollection<Order>()
   let closedPositions = new System.Collections.Concurrent.BlockingCollection<Order>()
-
   let mutable currentPrice = 0M
-
-  /// The starting date of the portfolio.
-  member this.StartDate = startDate
 
   /// Starting capital.
   member this.StartingCash = startingCash 
