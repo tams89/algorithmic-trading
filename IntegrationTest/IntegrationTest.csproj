@@ -66,11 +66,6 @@
       <Name>FinanceLibrary</Name>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </ProjectReference>
-    <ProjectReference Include="..\TradingCore\Core.csproj">
-      <Project>{ec23fcb3-67c9-47cb-80fe-eb91343fb7ae}</Project>
-      <Name>Core</Name>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

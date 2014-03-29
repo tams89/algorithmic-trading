@@ -70,12 +70,6 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\TradingCore\Core.csproj">
-      <Project>{EC23FCB3-67C9-47CB-80FE-EB91343FB7AE}</Project>
-      <Name>Core</Name>
-    </ProjectReference>
-  </ItemGroup>
   <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
