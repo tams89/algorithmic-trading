@@ -1,10 +1,10 @@
-﻿namespace FinanceLibrary.AlgorithmicTrading
+﻿namespace Algorithm.Core.AlgorithmicTrading
 (*
     This module generates ticks using random number generation.
 *)
 module AlgoMarket = 
 
- open FinanceLibrary.Records
+ open Algorithm.Core.Records
  
  type Market (duration, slippage : bool) = class
 

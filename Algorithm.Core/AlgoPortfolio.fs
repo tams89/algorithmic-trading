@@ -1,9 +1,9 @@
-﻿namespace FinanceLibrary.AlgorithmicTrading
+﻿namespace Algorithm.Core.AlgorithmicTrading
 
 module AlgoPortfolio =
 
  open System
- open FinanceLibrary.Records
+ open Algorithm.Core.Records
 
  /// PORTFOLIO
  type Portfolio(startingCash:decimal, startDate:DateTime) = class

@@ -1,4 +1,4 @@
-﻿namespace FinanceLibrary
+﻿namespace Algorithm.Core
 
 module Records = 
 

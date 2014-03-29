@@ -1,13 +1,13 @@
-﻿namespace FinanceLibrary
+﻿namespace Algorithm.Core
 
 module DatabaseLayer = 
 
  open System
  open System.Data.Linq
  open Microsoft.FSharp.Data.TypeProviders
- open FinanceLibrary.Interfaces
- open FinanceLibrary.Records
- open FinanceLibrary.AlgorithmicTrading.AlgoPortfolio
+ open Algorithm.Core.Interfaces
+ open Algorithm.Core.Records
+ open Algorithm.Core.AlgorithmicTrading.AlgoPortfolio
  
  type Log =
    { Portfolio:Portfolio

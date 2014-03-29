@@ -1,13 +1,13 @@
-﻿namespace FinanceLibrary.AlgorithmicTrading
+﻿namespace Algorithm.Core.AlgorithmicTrading
 
 module AlgoBackTester =
 
  open System
  open Microsoft.FSharp.Collections
- open FinanceLibrary
+ open Algorithm.Core
  open Records
  open Interfaces
- open YahooFinanceAPI.Stock
+ open YahooFinanceService.Stock
  open AlgorithmicTrading.AlgoPortfolio
  open AlgorithmicTrading.AlgoCalculation
  open AlgorithmicTrading.AlgoTrader

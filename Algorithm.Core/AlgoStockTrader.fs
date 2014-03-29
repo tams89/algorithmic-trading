@@ -1,4 +1,4 @@
-﻿namespace FinanceLibrary.AlgorithmicTrading
+﻿namespace Algorithm.Core.AlgorithmicTrading
 (*
     Simple Momentum Algorithm
     1. Calulate the volume weighted average i.e. 3 days/5 days.
@@ -12,7 +12,7 @@ module AlgoTrader =
 
     open System
     open Microsoft.FSharp.Collections
-    open FinanceLibrary
+    open Algorithm.Core
     open Records
     open AlgorithmicTrading.AlgoPortfolio
     open AlgorithmicTrading.AlgoCalculation

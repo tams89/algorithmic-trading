@@ -1,4 +1,4 @@
-﻿namespace FinanceLibrary
+﻿namespace Algorithm.Core
 
 module FIX = 
  
@@ -63,7 +63,7 @@ module FIX =
  
  type FIXEngine () = 
   
-  let settings = new SessionSettings("C:\Users\Tam\Documents\Repositories\sivaguru-capital\FinanceLibrary\config.cfg")
+  let settings = new SessionSettings("C:\Users\Tam\Documents\Repositories\sivaguru-capital\Algorithm.Core\config.cfg")
   let application = new ClientInitiator()
   let storeFactory = FileStoreFactory(settings)
   let logFactory = new ConsoleLogFactory(settings)

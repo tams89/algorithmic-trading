@@ -1,12 +1,12 @@
-﻿using FinanceLibrary;
-using FinanceLibrary.YahooFinanceAPI;
+﻿using Algorithm.Core;
+using Algorithm.Core.YahooFinanceService;
 using NUnit.Framework;
 using System.Linq;
 
-namespace Test.IntegrationTest.FinanceLibrary
+namespace Test.IntegrationTest.Algorithm.Core
 {
     [TestFixture]
-    public class YahooOptionAPITests
+    public class YahooOptionApiTests
     {
         [TestCase("MSFT", true)]
         [TestCase("GOOG", true)]

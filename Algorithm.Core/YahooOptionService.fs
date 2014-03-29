@@ -1,4 +1,4 @@
-﻿namespace FinanceLibrary.YahooFinanceAPI
+﻿namespace Algorithm.Core.YahooFinanceService
 
 module Option = 
     open System
@@ -9,9 +9,9 @@ module Option =
     open System.Globalization
     open System.Text.RegularExpressions
     open Microsoft.FSharp.Collections
-    open FinanceLibrary
-    open FinanceLibrary.Records
-    open FinanceLibrary.Interfaces
+    open Algorithm.Core
+    open Algorithm.Core.Records
+    open Algorithm.Core.Interfaces
     
     type GetOptionTableService() = 
         let makeUrlOptions ticker = 

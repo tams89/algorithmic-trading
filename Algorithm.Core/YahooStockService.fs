@@ -1,10 +1,10 @@
-﻿namespace FinanceLibrary.YahooFinanceAPI
+﻿namespace Algorithm.Core.YahooFinanceService
 
 module Stock = 
     open System
     open System.Net
-    open FinanceLibrary.Records
-    open FinanceLibrary.Interfaces
+    open Algorithm.Core.Records
+    open Algorithm.Core.Interfaces
     
     type StockDataService() = 
         let url = "http://ichart.finance.yahoo.com/table.csv?s="
