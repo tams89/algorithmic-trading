@@ -70,17 +70,14 @@
     <Compile Include="AlgoMarket.fs" />
     <Compile Include="AlgoCalculation.fs" />
     <Compile Include="AlgoPortfolio.fs" />
-    <Compile Include="DatabaseLayer.fs" />
     <Compile Include="AlgoStockTrader.fs" />
+    <Compile Include="DatabaseLayer.fs" />
     <Compile Include="AlgoBackTester.fs" />
-    <None Include="AlgoTradingScript.fsx" />
-    <None Include="YahooOptions.fsx" />
-    <None Include="packages.config" />
-    <None Include="FSharp.Charting.fsx" />
-    <None Include="Charting.fsx" />
-    <None Include="app.config" />
+    <Compile Include="FIX.fs" />
     <Compile Include="Program.fs" />
-    <None Include="README.md" />
+    <None Include="packages.config" />
+    <None Include="app.config" />
+    <None Include="config.cfg" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Charting">
@@ -130,6 +127,10 @@
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="QuickFix">
+      <HintPath>..\packages\QuickFix.Net.1.5.0\lib\QuickFix.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />

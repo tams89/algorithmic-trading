@@ -72,10 +72,7 @@
     <Compile Include="Utilities\Configuration.cs" />
     <Compile Include="Utilities\ExpressionHelpers.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Factory\" />
-    <Folder Include="Service\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
