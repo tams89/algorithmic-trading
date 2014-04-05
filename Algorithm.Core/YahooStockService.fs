@@ -33,9 +33,23 @@ module Stock =
             |> Seq.take count
             |> Array.ofSeq
             |> Array.rev
+
+        /// Returns the last traded price of a stock.
+        /// CSV [ symbol, ask, bid, chamge, last trade date, last trade time, market cap ]
+        let getRealtimePrice symbol = 
+         let url = "http://finance.yahoo.com/d/quotes.csv?s=" + symbol + "&f=sb2b3c6d1t1j3"
+         let wc = new WebClient()
+         let data = wc.DownloadString(url)
+         let infos = data.Split(',')
+         { Date = DateTime.Parse infos.[0]
+           Open = decimal infos.[1]
+           High = decimal infos.[2]
+           Low = decimal infos.[3]
+           Close = decimal infos.[4]
+           Volume = decimal infos.[5]
+           AdjClose = decimal infos.[6] }
         
         interface IStockService with
-            member this.GetPreviousStockPrices symbol daysBack = 
-                getStockPrices symbol daysBack
-            member this.GetStockPrices symbol daysBack = 
-                getStockPrices symbol daysBack
+         member this.GetPreviousStockPrices symbol daysBack = getStockPrices symbol daysBack
+         member this.GetStockPrices symbol daysBack = getStockPrices symbol daysBack
+         member this.GetRealTimePrice symbol = getRealtimePrice symbol

@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using TradingCore.AutoMapper;
+﻿using Core.AutoMapper;
+using NUnit.Framework;
 
 namespace Test.UnitTest.Core
 {

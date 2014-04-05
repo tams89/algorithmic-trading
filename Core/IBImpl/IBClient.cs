@@ -1,7 +1,7 @@
 ﻿using IBApi;
 using System;
 
-namespace TradingCore.IBImpl
+namespace Core.IBImpl
 {
     // TODO: Implementation needs testing with a demo or paper account.
     /// <summary>

@@ -1,4 +1,4 @@
-﻿namespace TradingCore.Model.Interface
+﻿namespace Core.Model.Interface
 {
     public abstract class EntityBase
     {

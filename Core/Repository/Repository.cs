@@ -1,14 +1,14 @@
-﻿using DapperExtensions;
+﻿using Core.Model.Interface;
+using Core.Repository.Interface;
+using Core.Utilities;
+using DapperExtensions;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq.Expressions;
-using TradingCore.Model.Interface;
-using TradingCore.Repository.Interface;
-using TradingCore.Utilities;
 
-namespace TradingCore.Repository
+namespace Core.Repository
 {
     /// <summary>
     /// Abstract Generic Repository.

@@ -1,7 +1,7 @@
-﻿using NUnit.Framework;
+﻿using Core.Model;
+using Core.Utilities;
+using NUnit.Framework;
 using System;
-using TradingCore.Model;
-using TradingCore.Utilities;
 
 namespace Test.UnitTest.Core
 {

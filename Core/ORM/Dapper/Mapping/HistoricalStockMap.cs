@@ -1,7 +1,7 @@
-﻿using DapperExtensions.Mapper;
-using TradingCore.Model;
+﻿using Core.Model;
+using DapperExtensions.Mapper;
 
-namespace TradingCore.ORM.Dapper.Mapping
+namespace Core.ORM.Dapper.Mapping
 {
     public sealed class HistoricalStockMap : ClassMapper<HistoricalStock>
     {

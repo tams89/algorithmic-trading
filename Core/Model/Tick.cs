@@ -1,7 +1,7 @@
-﻿using System;
-using TradingCore.Model.Interface;
+﻿using Core.Model.Interface;
+using System;
 
-namespace TradingCore.Model
+namespace Core.Model
 {
     public class Tick : EntityBase
     {

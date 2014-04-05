@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
-using TradingCore.DTO;
-using TradingCore.Model;
+using Core.DTO;
+using Core.Model;
 
-namespace TradingCore.AutoMapper
+namespace Core.AutoMapper
 {
     public class AutoMapperConfig
     {

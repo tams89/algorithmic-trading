@@ -1,6 +1,6 @@
 ﻿using System.Configuration;
 
-namespace TradingCore.Utilities
+namespace Core.Utilities
 {
     /// <summary>
     /// System configuration items.

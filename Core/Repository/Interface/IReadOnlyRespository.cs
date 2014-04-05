@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Core.Model.Interface;
+using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using TradingCore.Model.Interface;
 
-namespace TradingCore.Repository.Interface
+namespace Core.Repository.Interface
 {
     public interface IReadOnlyRespository<TEntity> where TEntity : EntityBase, new()
     {

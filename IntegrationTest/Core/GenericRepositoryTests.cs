@@ -1,9 +1,9 @@
-﻿using NUnit.Framework;
+﻿using Core.Model;
+using Core.Repository;
+using Core.Repository.Interface;
+using NUnit.Framework;
 using System;
 using System.Linq;
-using TradingCore.Model;
-using TradingCore.Repository;
-using TradingCore.Repository.Interface;
 
 namespace Test.IntegrationTest.Core
 {

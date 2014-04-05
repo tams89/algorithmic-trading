@@ -1,7 +1,7 @@
-﻿using System;
-using TradingCore.DTO.Interface;
+﻿using Core.DTO.Interface;
+using System;
 
-namespace TradingCore.DTO
+namespace Core.DTO
 {
     public class TickDTO : IDTO
     {

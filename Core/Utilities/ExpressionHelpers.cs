@@ -2,7 +2,7 @@
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace TradingCore.Utilities
+namespace Core.Utilities
 {
     public static class ExpressionHelpers<TEntity>
     {

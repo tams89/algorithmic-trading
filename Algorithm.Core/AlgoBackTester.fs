@@ -39,7 +39,7 @@ module AlgoBackTester =
    let portfolio = new Portfolio(startingCash)
    let finCalc = new Calculation()
    let market = new Market(float(backTestPeriod), simulateSlippage)
-   let trader = new Trader(symbol, portfolio, finCalc, market)
+   let trader = new Trader(symbol, portfolio, finCalc, Option.Some market)
    let logRecs = new System.Collections.Generic.List<Log*DateTime*DateTime>()
   
    // Filter any useless or erroneous data.

@@ -73,6 +73,7 @@
     <Compile Include="AlgoStockTrader.fs" />
     <Compile Include="DatabaseLayer.fs" />
     <Compile Include="AlgoBackTester.fs" />
+    <Compile Include="AlgoLiveBackTester.fs" />
     <Compile Include="FIX.fs" />
     <Compile Include="Program.fs" />
     <None Include="packages.config" />

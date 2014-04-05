@@ -128,3 +128,5 @@ module DatabaseLayer =
             Close = decimal x.Close
             Volume = (decimal x.Volume)
             AdjClose = 0M }) |> Seq.toArray
+
+   member this.GetRealTimePrice symbol = 0.0M

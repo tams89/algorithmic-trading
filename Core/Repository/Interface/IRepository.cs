@@ -1,6 +1,6 @@
-﻿using TradingCore.Model.Interface;
+﻿using Core.Model.Interface;
 
-namespace TradingCore.Repository.Interface
+namespace Core.Repository.Interface
 {
     public interface IRepository<TEntity> : IReadOnlyRespository<TEntity> where TEntity : EntityBase, new()
     {

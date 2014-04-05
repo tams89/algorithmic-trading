@@ -1,10 +1,10 @@
-﻿using Moq;
+﻿using Core.Model;
+using Core.Repository.Interface;
+using Moq;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TradingCore.Model;
-using TradingCore.Repository.Interface;
 
 namespace Test.UnitTest.Core
 {

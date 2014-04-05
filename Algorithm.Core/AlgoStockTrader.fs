@@ -19,7 +19,7 @@ module AlgoTrader =
     open AlgorithmicTrading.AlgoMarket
     
     /// TRADER
-    type Trader(symbol : string, portfolio : Portfolio, calculator : Calculation, market : Market) = class
+    type Trader(symbol : string, portfolio : Portfolio, calculator : Calculation, market : option<Market>) = class
      
      // Field containing previous 10 ticks.
      let ticksToday = new System.Collections.Concurrent.ConcurrentQueue<Tick>()
@@ -44,11 +44,12 @@ module AlgoTrader =
        | Short -> order symbol tick.Date (-quantity) Short (- quantity * price)
        | Cover -> order symbol tick.Date (quantity) Cover (- quantity * price)
 
-      match market.PricesShouldSlip with 
-      | true -> let slipped = market.GenerateSlippage(orderRecord, tick) 
-                slipped |> Seq.iter (fun x -> portfolio.AddPosition(x))
-      | false -> portfolio.AddPosition(orderRecord)
-     
+      match market with 
+      | x when x.IsSome && x.Value.PricesShouldSlip -> 
+         let slipped = market.Value.GenerateSlippage(orderRecord, tick) 
+         slipped |> Seq.iter (fun x -> portfolio.AddPosition(x))
+      | _ -> portfolio.AddPosition(orderRecord)
+
      /// Closes a position.
      member private this.ClosePosition(order) = portfolio.ClosePosition(order)
 
@@ -72,7 +73,7 @@ module AlgoTrader =
          // For large orders the order could chunked into smaller pieces with a delay between each order. 
          let numOfShares = 
           match calcVwap with
-          | x when x > 0M -> floor (List.min [ (tick.Volume * 0.1M); (portfolio.Cash / calcVwap) ])
+          | x when x > 0M -> floor portfolio.Cash / calcVwap
           | _ -> 0M
 
          if numOfShares > 1M then
