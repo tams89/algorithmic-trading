@@ -60,7 +60,12 @@ module AlgoTrader =
          this.AddTickToQueue(tick)
          
          // Update portfolio with latest price information.
-         let currentPrice = tick.Low
+         // If this is not a backtest then AdjClose will be 0M and so the realtime Ask price will be used.
+         let currentPrice = 
+          match tick with
+          | x when x.Ask.IsSome -> tick.Ask.Value
+          | _ -> tick.Low
+
          portfolio.CurrentPrice <- currentPrice
 
          let minLimit = - portfolio.StartingCash                          // must be negative, used for short positions.

@@ -46,14 +46,12 @@ module AlgoLiveSystem =
     checkDay && marketOpen
 
    // Poll the market every minute within market open hours specified (US Eastern, NYSE). 
-   while true = true do 
-
-    // Get current tick
+   while algoLives do 
+    // Get current tick.
     let tick = stockService.GetRealTimePrice(symbol)
-    
     // Execute trading.
-    trader.IncomingTick()
-
+    trader.IncomingTick(tick, shortVwap, longVwap, coverBarrier, coverAfter, vwapPeriod)
+    // Sleep for 1min.
     System.Threading.Thread.Sleep(1*60*1000)
 
 

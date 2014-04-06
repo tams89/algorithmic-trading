@@ -11,15 +11,9 @@ module Records =
        Low : decimal
        Close : decimal
        Volume : decimal
-       AdjClose : decimal }
-
- type RealTick = 
-  { LastTradeDate : DateTime
-    Ask : decimal
-    Bid : decimal
-    LastTrade : decimal
-    Change : decimal
-    LastTradeVolume : int }
+       AdjClose : decimal
+       Ask : option<decimal>
+       Bid : option<decimal> }
  
  type OptionsData = 
      { Symbol : string
@@ -64,7 +58,7 @@ module Interfaces =
  type IStockService = 
      abstract GetStockPrices : string -> int -> Tick []
      abstract GetPreviousStockPrices : string -> int -> Tick []
-     abstract GetRealTimePrice : string -> decimal
+     abstract GetRealTimePrice : string -> Tick
  
  type IOptionService = 
      abstract GetOptionTable : string -> OptionsData list
