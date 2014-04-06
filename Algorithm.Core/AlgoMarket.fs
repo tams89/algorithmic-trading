@@ -24,7 +24,7 @@ module AlgoMarket =
    let l = decimal (nRandom(int(floor(h)),minPrice))
    let c = decimal (nRandom(maxPrice,minPrice))
    let v = decimal (nRandom(minVol maxVol))
-   let tick = { Date = System.DateTime.Now; Open = o; High = h; Low = l; Close = c; Volume = v; AdjClose = 0M }
+   let tick = { Date = System.DateTime.Now; Open = o; High = h; Low = l; Close = c; Volume = v; AdjClose = 0M; Ask = None; Bid = None }
    tick
 
 //  member this.DownTick = 

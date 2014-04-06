@@ -97,7 +97,9 @@ module DatabaseLayer =
    with
     | exn -> printfn "Exception: \n%s" exn.Message
 
+   
   interface IStockService with
+
    // Query to fetch all HFT.Tick datwhere within date range and has matching symbol.
    /// Stock prices for number of days before today.
    member this.GetPreviousStockPrices symbol daysBack = 
@@ -112,7 +114,9 @@ module DatabaseLayer =
             Low = decimal x.Low
             Close = decimal x.Close
             Volume = (decimal x.Volume)
-            AdjClose = 0M }) |> Seq.toArray
+            AdjClose = 0M
+            Ask = None
+            Bid = None }) |> Seq.toArray
 
        /// Stock prices for number of days before today.
    member this.GetStockPrices symbol numRecs = 
@@ -127,6 +131,17 @@ module DatabaseLayer =
             Low = decimal x.Low
             Close = decimal x.Close
             Volume = (decimal x.Volume)
-            AdjClose = 0M }) |> Seq.toArray
+            AdjClose = 0M
+            Ask = None
+            Bid = None }) |> Seq.toArray
 
-   member this.GetRealTimePrice symbol = 0.0M
+    member this.GetRealTimePrice symbol = 
+                  { Date = DateTime.Now
+                    Open = 0M
+                    High = 0M
+                    Low = 0M
+                    Close = 0M
+                    Volume = 0M
+                    AdjClose = 0M
+                    Ask = None
+                    Bid = None }

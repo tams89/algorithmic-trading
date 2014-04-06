@@ -44,8 +44,12 @@ module AlgoLiveSystem =
      then true
      else false
     checkDay && marketOpen
+  
+   // Snoozes out of hours.
+   while not algoLives do
+    Threading.Thread.Sleep(1*60*1000)
 
-   // Poll the market every minute within market open hours specified (US Eastern, NYSE). 
+   // Poll the market every minute within market open hours specified (US Eastern, NASDAQ). 
    while algoLives do 
     // Get current tick.
     let tick = stockService.GetRealTimePrice(symbol)
@@ -53,7 +57,31 @@ module AlgoLiveSystem =
     trader.IncomingTick(tick, shortVwap, longVwap, coverBarrier, coverAfter, vwapPeriod)
     // Sleep for 1min.
     System.Threading.Thread.Sleep(1*60*1000)
-
+   
+   if algoLives then  
+    // Return the portfolio on market close / simulation over.
+    let variables = 
+     { Symbol = symbol
+       BackTestPeriod = 0; 
+       ShortVwap = shortVwap; 
+       LongVwap = longVwap; 
+       VwapPeriod = vwapPeriod; 
+       CoverBarrierPrice = coverBarrier; 
+       CoverAfterDays = coverAfter  }
+    
+    let log = 
+     { Portfolio = portfolio
+       Variables = variables  } 
+    
+    logRecs.Add(log, DateTime.Today, DateTime.Today)
+    
+    // Insert collected data to database.
+    for data,sd,ed in logRecs do
+     let tData = data,sd,ed
+     let id = db.InsertIterationData(tData)
+     db.InsertOrders(data.Portfolio.Positions, false, id)
+     db.InsertOrders(data.Portfolio.ClosedPositions, true, id)
+    db.Commit()
 
   // Constructors
   new () = LiveBackTest("IBM", new YahooFinanceService.Stock.StockDataService(), 10000M, 0.995M, 1.005M, 0.998M, 1.0, 1.0)
