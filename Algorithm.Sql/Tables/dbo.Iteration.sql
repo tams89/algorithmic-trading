@@ -1,0 +1,25 @@
+﻿CREATE TABLE [dbo].[Iteration]
+(
+	[IterationId] INT NOT NULL PRIMARY KEY IDENTITY, 
+    [Symbol] VARCHAR(10) NOT NULL, 
+    [StartDate] DATETIME NOT NULL, 
+    [EndDate] DATETIME NOT NULL, 
+    [StartingCash] DECIMAL(18, 2) NOT NULL, 
+    [CurrentCash] DECIMAL(18, 2) NOT NULL, 
+    [PortfolioValue] DECIMAL(18, 2) NOT NULL, 
+    [CurrentPositions] INT NOT NULL, 
+    [ShortPositions] INT NOT NULL, 
+    [ClosedPositions] INT NOT NULL, 
+    [ClosedShortPositions] INT NOT NULL, 
+    [PositionValue] DECIMAL(18, 2) NOT NULL, 
+    [ShortPositionValue] DECIMAL(18, 2) NOT NULL, 
+    [ClosedPositionValue] DECIMAL(18, 2) NOT NULL, 
+    [ClosedShortPositionValue] DECIMAL(18, 2) NOT NULL, 
+    [Return] DECIMAL(18, 2) NOT NULL, 
+    [ProfitAndLoss] DECIMAL(18, 2) NOT NULL, 
+    [ShortVwap] DECIMAL(18, 2) NOT NULL, 
+    [LongVwap] DECIMAL(18, 2) NOT NULL, 
+    [VwapPeriod] DECIMAL(18, 2) NOT NULL, 
+    [CoverBarrierPrice] DECIMAL(18, 2) NOT NULL, 
+    [CoverAfterDays] DECIMAL(18, 2) NOT NULL
+)

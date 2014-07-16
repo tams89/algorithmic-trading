@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Operations Version="1.0" xmlns="http://schemas.microsoft.com/sqlserver/dac/Serialization/2012/02">
+  <Operation Name="Rename Refactor" Key="e490214b-3d69-448e-adbf-ce0e31ce2d97" ChangeDateTime="07/16/2014 20:06:11">
+    <Property Name="ElementName" Value="[dbo].[TIck].[Id]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[TIck]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="TickId" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="707a3575-a437-45f1-aacc-15e8802c09aa" ChangeDateTime="07/16/2014 20:06:28">
+    <Property Name="ElementName" Value="[dbo].[TIck].[Volumw]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[TIck]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="Volume" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="115c5f6d-f15a-4260-9540-7fbb63a462b1" ChangeDateTime="07/16/2014 20:23:20">
+    <Property Name="ElementName" Value="[dbo].[Order].[Id]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[Order]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="OrderId" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="a0e86295-bb82-4e2c-b1ef-a04b804fe94a" ChangeDateTime="07/16/2014 20:25:03">
+    <Property Name="ElementName" Value="[dbo].[Iteration].[Id]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[Iteration]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="IterationId" />
+  </Operation>
+</Operations>
