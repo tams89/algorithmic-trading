@@ -60,7 +60,6 @@
   <ItemGroup>
     <Folder Include="Properties" />
     <Folder Include="Tables" />
-    <Folder Include="SeedData" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="Tables\dbo.Tick.sql" />
@@ -72,7 +71,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Algorithm.Sql.publish.xml" />
-    <None Include="SeedData\IBM_adjusted.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="PostDeploy.sql" />
