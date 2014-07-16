@@ -1,4 +1,6 @@
-﻿CREATE TABLE #TickStaging
+﻿USE [SivaguruCapital]
+
+CREATE TABLE #TickStaging
     (
       [Date] VARCHAR(10) ,
       [Time] VARCHAR(10) ,
