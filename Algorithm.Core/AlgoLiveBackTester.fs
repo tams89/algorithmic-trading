@@ -37,17 +37,18 @@ module AlgoLiveSystem =
    // Checks to see if the current month and day are in the non-trading days list.
    let algoLives = 
     let checkDay = 
+     System.Console.WriteLine(DateTime.UtcNow.TimeOfDay)
      if nonTradingDays |> Array.exists (fun x -> x = (DateTime.Today.Day, DateTime.Today.Month)) then false
      else true 
     let marketOpen = 
-     if (DateTime.UtcNow.TimeOfDay.Hours > 9 && DateTime.UtcNow.TimeOfDay.Minutes > 30) && (DateTime.UtcNow.TimeOfDay.Hours < 4) 
+     if (DateTime.UtcNow.TimeOfDay.Hours > 14 && DateTime.UtcNow.TimeOfDay.Minutes > 30) || (DateTime.UtcNow.TimeOfDay.Hours < 21)
      then true
      else false
     checkDay && marketOpen
   
    // Snoozes out of hours.
    while not algoLives do
-    Threading.Thread.Sleep(1*60*1000)
+    Threading.Thread.Sleep(1000*60)
 
    // Poll the market every minute within market open hours specified (US Eastern, NASDAQ). 
    while algoLives do 
@@ -56,26 +57,26 @@ module AlgoLiveSystem =
     // Execute trading.
     trader.IncomingTick(tick, shortVwap, longVwap, coverBarrier, coverAfter, vwapPeriod)
     // Sleep for 1min.
-    System.Threading.Thread.Sleep(1*60*1000)
+    System.Threading.Thread.Sleep(1000*5)
    
-   if algoLives then  
-    // Return the portfolio on market close / simulation over.
-    let variables = 
-     { Symbol = symbol
-       BackTestPeriod = 0; 
-       ShortVwap = shortVwap; 
-       LongVwap = longVwap; 
-       VwapPeriod = vwapPeriod; 
-       CoverBarrierPrice = coverBarrier; 
-       CoverAfterDays = coverAfter  }
-    
-    let log = 
-     { Portfolio = portfolio
-       Variables = variables  } 
-    
-    logRecs.Add(log, DateTime.Today, DateTime.Today)
-    
-    // Insert collected data to database.
+    if algoLives then  
+     // Return the portfolio on market close / simulation over.
+     let variables = 
+      { Symbol = symbol
+        BackTestPeriod = 0; 
+        ShortVwap = shortVwap; 
+        LongVwap = longVwap; 
+        VwapPeriod = vwapPeriod; 
+        CoverBarrierPrice = coverBarrier; 
+        CoverAfterDays = coverAfter  }
+     
+     let log = 
+      { Portfolio = portfolio
+        Variables = variables  } 
+     
+     logRecs.Add(log, DateTime.Today, DateTime.Today)
+     
+     // Insert collected data to database.
     for data,sd,ed in logRecs do
      let tData = data,sd,ed
      let id = db.InsertIterationData(tData)
