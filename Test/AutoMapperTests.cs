@@ -1,7 +1,7 @@
 ﻿using Core.AutoMapper;
 using NUnit.Framework;
 
-namespace Test.UnitTest.Core
+namespace Test.UnitTest
 {
     [TestFixture]
     public class AutoMapperTests

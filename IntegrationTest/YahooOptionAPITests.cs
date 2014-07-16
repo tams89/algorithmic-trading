@@ -1,9 +1,9 @@
-﻿using Algorithm.Core;
+﻿using System.Linq;
+using Algorithm.Core;
 using Algorithm.Core.YahooFinanceService;
 using NUnit.Framework;
-using System.Linq;
 
-namespace Test.IntegrationTest.Algorithm.Core
+namespace Test.IntegrationTest
 {
     [TestFixture]
     public class YahooOptionApiTests

@@ -7,6 +7,6 @@ namespace Core.Utilities
     /// </summary>
     public static class Configuration
     {
-        public static readonly string AlgoTraderDBConStr = ConfigurationManager.ConnectionStrings["AlgoTraderDB"].ConnectionString;
+        public static readonly string AlgoTraderDbConStr = ConfigurationManager.ConnectionStrings["AlgoTraderDB"].ConnectionString;
     }
 }

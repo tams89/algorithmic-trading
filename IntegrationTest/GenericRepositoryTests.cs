@@ -1,11 +1,10 @@
-﻿using Core.Model;
-using Core.Repository;
-using Core.Repository.Interface;
-using NUnit.Framework;
-using System;
+﻿using System;
 using System.Linq;
+using Core.Model;
+using Core.Repository;
+using NUnit.Framework;
 
-namespace Test.IntegrationTest.Core
+namespace Test.IntegrationTest
 {
     [TestFixture]
     public class GenericRepositoryTests
@@ -19,13 +18,6 @@ namespace Test.IntegrationTest.Core
         {
             var data = tickRepository.Get(Guid.Parse(id));
             Assert.IsTrue(data != null == shouldPass);
-        }
-
-        [Test]
-        public void GetAllEntities()
-        {
-            var data = tickRepository.GetAll();
-            Assert.IsNotEmpty(data);
         }
 
         [TestCase("IBM Minute", true)]
@@ -55,12 +47,6 @@ namespace Test.IntegrationTest.Core
         {
             var data = tickRepository.GetBy(x => x.Open, memberValue);
             Assert.IsTrue(data.Any() == shouldPass);
-        }
-
-        [Test]
-        public void GetByNull()
-        {
-            Assert.Catch<ArgumentNullException>(() => tickRepository.GetBy(x => x, null));
         }
 
         [Test]
@@ -96,6 +82,19 @@ namespace Test.IntegrationTest.Core
 
             // Delete
             Assert.DoesNotThrow(() => historicalStockRepository.Delete(historicalStock));
+        }
+
+        [Test]
+        public void GetAllEntities()
+        {
+            var data = tickRepository.GetAll();
+            Assert.IsNotEmpty(data);
+        }
+
+        [Test]
+        public void GetByNull()
+        {
+            Assert.Catch<ArgumentNullException>(() => tickRepository.GetBy(x => x, null));
         }
     }
 }

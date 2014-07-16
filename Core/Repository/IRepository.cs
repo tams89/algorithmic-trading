@@ -1,6 +1,6 @@
-﻿using Core.Model.Interface;
+﻿using Core.Model;
 
-namespace Core.Repository.Interface
+namespace Core.Repository
 {
     public interface IRepository<TEntity> : IReadOnlyRespository<TEntity> where TEntity : EntityBase, new()
     {

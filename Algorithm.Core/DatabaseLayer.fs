@@ -17,8 +17,7 @@ module DatabaseLayer =
 
  let iterationToIterationTable data = 
   let log,ds,ed = data
-  let table = new dbSchema.ServiceTypes.Portfolio_Iteration()
-  table.IterationId <- Guid.NewGuid()
+  let table = new dbSchema.ServiceTypes.Iteration()
   table.Symbol <- log.Variables.Symbol
   table.StartDate <- ds
   table.EndDate <- ed
@@ -33,24 +32,20 @@ module DatabaseLayer =
   table.ShortPositionValue <- log.Portfolio.ShortPositionsValue 
   table.ClosedPositionValue <- log.Portfolio.ClosedPositionsValue 
   table.ClosedShortPositionValue <- log.Portfolio.ClosedShortPositionsValue 
-  table.Returns <- log.Portfolio.Returns 
+  table.Return <- log.Portfolio.Returns 
   table.ProfitAndLoss <- log.Portfolio.ProfitAndLoss 
   table.ShortVwap <- log.Variables.ShortVwap 
   table.LongVwap <- log.Variables.LongVwap 
-  table.VwapPeriod <- log.Variables.VwapPeriod 
+  table.VwapPeriod <- decimal log.Variables.VwapPeriod 
   table.CoverBarrierPrice <- log.Variables.CoverBarrierPrice 
-  table.CoverAfterDays <- log.Variables.CoverAfterDays 
+  table.CoverAfterDays <- decimal log.Variables.CoverAfterDays 
   table
 
- let orderToOrderTable (data : Order, isClosed : bool, iterationId : Guid option) = 
-  let table = new dbSchema.ServiceTypes.Portfolio_Order()
-  table.OrderId <- Guid.NewGuid()
-  match iterationId.IsSome with 
-  | true -> table.IterationId <- new Nullable<Guid>(iterationId.Value)
-  | false -> table.IterationId <- new Nullable<Guid>()
+ let orderToOrderTable (data : Order, isClosed : bool, iterationId : int option) = 
+  let table = new dbSchema.ServiceTypes.Order()
   table.Symbol <- data.Symbol
   table.Date <- data.Date
-  table.Quantity <- data.Quantity
+  table.Quantity <- int data.Quantity
   match data.OrderType with
   | Long -> table.OrderType <- "Long"
   | Short -> table.OrderType <- "Short"
@@ -64,8 +59,8 @@ module DatabaseLayer =
  type Database () = 
 
   let db = dbSchema.GetDataContext()
-  let iterationTable = db.Portfolio_Iteration
-  let orderTable = db.Portfolio_Order
+  let iterationTable = db.Iteration
+  let orderTable = db.Order
 
   do
    db.DataContext.Log <- Console.Out
@@ -82,11 +77,11 @@ module DatabaseLayer =
    iterationTable.InsertAllOnSubmit(newData)
   
   /// Writes order to database.
-  member this.InsertOrder (data : Order, isClosed : bool, iterationId : Guid option) =
+  member this.InsertOrder (data : Order, isClosed : bool, iterationId : int option) =
    orderTable.InsertOnSubmit(orderToOrderTable(data,isClosed,iterationId))
 
   /// Writes orders to database.
-  member this.InsertOrders (data : System.Collections.Generic.IEnumerable<Order>, isClosed : bool, iterationId : Guid option) =
+  member this.InsertOrders (data : System.Collections.Generic.IEnumerable<Order>, isClosed : bool, iterationId : int option) =
    let newData = [ for i in data -> orderToOrderTable(i,isClosed,iterationId) ]
    orderTable.InsertAllOnSubmit(newData)
 
@@ -103,7 +98,7 @@ module DatabaseLayer =
    // Query to fetch all HFT.Tick datwhere within date range and has matching symbol.
    /// Stock prices for number of days before today.
    member this.GetPreviousStockPrices symbol daysBack = 
-      query { for row in db.HFT_Tick do
+      query { for row in db.Tick do
               where (row.Symbol = symbol && row.Date >= DateTime.Today.AddDays(float(-daysBack)))
               sortBy row.Date 
               select row }
@@ -118,10 +113,10 @@ module DatabaseLayer =
             Ask = None
             Bid = None }) |> Seq.toArray
 
-       /// Stock prices for number of days before today.
+   /// Stock prices for number of days before today.
    member this.GetStockPrices symbol numRecs = 
-      query { for row in db.HFT_Tick do 
-              where (row.Symbol = symbol && row.Date >= query { for row in db.HFT_Tick do maxBy (row.Date.AddDays(float(-numRecs))) } )
+      query { for row in db.Tick do 
+              where (row.Symbol = symbol && row.Date >= query { for row in db.Tick do maxBy (row.Date.AddDays(float(-numRecs))) } )
               sortBy row.Date 
               select row }
       |> Seq.map (fun x -> 

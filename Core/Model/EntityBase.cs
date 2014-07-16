@@ -1,4 +1,4 @@
-﻿namespace Core.Model.Interface
+﻿namespace Core.Model
 {
     public abstract class EntityBase
     {

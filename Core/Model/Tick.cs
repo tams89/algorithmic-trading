@@ -1,5 +1,4 @@
-﻿using Core.Model.Interface;
-using System;
+﻿using System;
 
 namespace Core.Model
 {

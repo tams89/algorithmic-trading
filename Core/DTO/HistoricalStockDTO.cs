@@ -1,9 +1,8 @@
-﻿using Core.DTO.Interface;
-using System;
+﻿using System;
 
 namespace Core.DTO
 {
-    public class HistoricalStockDTO : IDTO
+    public class HistoricalStockDto : IDto
     {
         public Guid HistoricalStockId { get; set; }
         public string Symbol { get; set; }

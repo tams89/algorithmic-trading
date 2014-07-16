@@ -1,9 +1,8 @@
-﻿using Core.DTO.Interface;
-using System;
+﻿using System;
 
 namespace Core.DTO
 {
-    public class TickDTO : IDTO
+    public class TickDto : IDto
     {
         public Guid TickId { get; set; }
         public string Symbol { get; set; }

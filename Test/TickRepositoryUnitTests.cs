@@ -1,12 +1,12 @@
-﻿using Core.Model;
-using Core.Repository.Interface;
-using Moq;
-using NUnit.Framework;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Core.Model;
+using Core.Repository;
+using Moq;
+using NUnit.Framework;
 
-namespace Test.UnitTest.Core
+namespace Test.UnitTest
 {
     [TestFixture]
     public class TickRepositoryUnitTests

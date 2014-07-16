@@ -11,8 +11,8 @@ namespace Core.AutoMapper
         /// </summary>
         public static void Configure()
         {
-            Mapper.CreateMap<Tick, TickDTO>();
-            Mapper.CreateMap<HistoricalStock, HistoricalStockDTO>();
+            Mapper.CreateMap<Tick, TickDto>();
+            Mapper.CreateMap<HistoricalStock, HistoricalStockDto>();
 
             Mapper.AssertConfigurationIsValid();
         }

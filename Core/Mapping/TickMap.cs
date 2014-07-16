@@ -1,7 +1,7 @@
 ﻿using Core.Model;
 using DapperExtensions.Mapper;
 
-namespace Core.ORM.Dapper.Mapping
+namespace Core.Mapping
 {
     public sealed class TickMap : ClassMapper<Tick>
     {

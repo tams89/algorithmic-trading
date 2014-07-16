@@ -1,12 +1,11 @@
-﻿using Core.Model.Interface;
-using Core.Repository.Interface;
-using Core.Utilities;
-using DapperExtensions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq.Expressions;
+using Core.Model;
+using Core.Utilities;
+using DapperExtensions;
 
 namespace Core.Repository
 {
@@ -24,7 +23,7 @@ namespace Core.Repository
         {
             get
             {
-                return new SqlConnection(Configuration.AlgoTraderDBConStr);
+                return new SqlConnection(Configuration.AlgoTraderDbConStr);
             }
         }
 
@@ -67,8 +66,6 @@ namespace Core.Repository
 
             return ticks;
         }
-
-
 
         /// <summary>
         /// Get collection of all of a type of entity.

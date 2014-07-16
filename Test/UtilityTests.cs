@@ -1,9 +1,9 @@
-﻿using Core.Model;
+﻿using System;
+using Core.Model;
 using Core.Utilities;
 using NUnit.Framework;
-using System;
 
-namespace Test.UnitTest.Core
+namespace Test.UnitTest
 {
     [TestFixture]
     public class UtilityTests

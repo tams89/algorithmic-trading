@@ -56,26 +56,18 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="Core\AutoMapperTests.cs" />
-    <Compile Include="Core\TickRepositoryUnitTests.cs" />
-    <Compile Include="Core\UtilityTests.cs" />
-    <Compile Include="IBImpl\ContractSamples.cs" />
-    <Compile Include="IBImpl\EWrapperImplTests.cs" />
-    <Compile Include="IBImpl\OrderSamples.cs" />
-    <Compile Include="IBImpl\RequestContractDetails.cs" />
-    <Compile Include="IBImpl\ScannerSubscriptionSamples.cs" />
+    <Compile Include="AutoMapperTests.cs" />
+    <Compile Include="TickRepositoryUnitTests.cs" />
+    <Compile Include="UtilityTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Core\Core.csproj">
+    <ProjectReference Include="..\Core\DataCore.csproj">
       <Project>{EC23FCB3-67C9-47CB-80FE-EB91343FB7AE}</Project>
-      <Name>Core</Name>
+      <Name>DataCore</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

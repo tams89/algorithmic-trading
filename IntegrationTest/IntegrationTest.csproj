@@ -38,9 +38,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Algorithm.Core">
-      <HintPath>..\Algorithm.Core\bin\Debug\Algorithm.Core.exe</HintPath>
-    </Reference>
     <Reference Include="FSharp.Core, Version=4.3.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="nunit.framework, Version=2.6.3.13283, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
@@ -60,13 +57,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Core\Core.csproj">
+    <ProjectReference Include="..\Algorithm.Core\Algorithm.Core.fsproj">
+      <Project>{67e10d3d-ab07-433c-9632-1940207057ac}</Project>
+      <Name>Algorithm.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Core\DataCore.csproj">
       <Project>{ec23fcb3-67c9-47cb-80fe-eb91343fb7ae}</Project>
-      <Name>Core</Name>
+      <Name>DataCore</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>

@@ -68,17 +68,15 @@
     <Compile Include="YahooOptionService.fs" />
     <Compile Include="YahooStockService.fs" />
     <Compile Include="AlgoMarket.fs" />
-    <Compile Include="AlgoCalculation.fs" />
-    <Compile Include="AlgoPortfolio.fs" />
-    <Compile Include="AlgoStockTrader.fs" />
+    <Compile Include="Calculation.fs" />
+    <Compile Include="Portfolio.fs" />
+    <Compile Include="StockTrader.fs" />
     <Compile Include="DatabaseLayer.fs" />
-    <Compile Include="AlgoBackTester.fs" />
-    <Compile Include="AlgoLiveBackTester.fs" />
-    <Compile Include="FIX.fs" />
+    <Compile Include="BackTester.fs" />
+    <Compile Include="LiveTester.fs" />
     <Compile Include="Program.fs" />
     <None Include="packages.config" />
     <None Include="app.config" />
-    <None Include="config.cfg" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Charting">
