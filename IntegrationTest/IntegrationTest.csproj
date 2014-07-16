@@ -55,8 +55,8 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="Core\GenericRepositoryTests.cs" />
-    <Compile Include="Algorithm.Core\YahooOptionAPITests.cs" />
+    <Compile Include="GenericRepositoryTests.cs" />
+    <Compile Include="YahooOptionAPITests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
