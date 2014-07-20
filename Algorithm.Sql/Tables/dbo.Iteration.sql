@@ -17,8 +17,8 @@
     [ClosedShortPositionValue] DECIMAL(18, 2) NOT NULL, 
     [Return] DECIMAL(18, 2) NOT NULL, 
     [ProfitAndLoss] DECIMAL(18, 2) NOT NULL, 
-    [ShortVwap] DECIMAL(18, 2) NOT NULL, 
-    [LongVwap] DECIMAL(18, 2) NOT NULL, 
+    [ShortVwap] DECIMAL(18, 4) NOT NULL, 
+    [LongVwap] DECIMAL(18, 4) NOT NULL, 
     [VwapPeriod] DECIMAL(18, 2) NOT NULL, 
     [CoverBarrierPrice] DECIMAL(18, 2) NOT NULL, 
     [CoverAfterDays] DECIMAL(18, 2) NOT NULL
