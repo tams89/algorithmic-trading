@@ -1,5 +1,7 @@
 ﻿USE [SivaguruCapital]
 
+TRUNCATE TABLE [dbo].[Tick]
+
 CREATE TABLE #TickStaging
     (
       [Date] VARCHAR(10) ,
@@ -22,9 +24,8 @@ WITH
 )
 
 INSERT  INTO [dbo].[Tick]
-        SELECT  'IBM' ,
-				CONVERT(DATE, [DATE]) ,
-				CONVERT(TIME, [Time]) ,
+        SELECT  'IBM Minute' ,
+				CONVERT(DATETIME, [DATE] + ' ' + [Time]) ,
                 CONVERT(DECIMAL, [Open]) ,
                 CONVERT(DECIMAL, [High]) ,
                 CONVERT(DECIMAL, [Low]) ,

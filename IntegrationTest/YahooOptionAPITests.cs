@@ -1,7 +1,7 @@
-﻿using System.Linq;
-using Algorithm.Core;
+﻿using Algorithm.Core;
 using Algorithm.Core.YahooFinanceService;
 using NUnit.Framework;
+using System.Linq;
 
 namespace Test.IntegrationTest
 {

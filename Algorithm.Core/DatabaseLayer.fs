@@ -43,6 +43,7 @@ module DatabaseLayer =
 
  let orderToOrderTable (data : Order, isClosed : bool, iterationId : int option) = 
   let table = new dbSchema.ServiceTypes.Order()
+  table.IterationId <- iterationId.Value
   table.Symbol <- data.Symbol
   table.Date <- data.Date
   table.Quantity <- int data.Quantity
@@ -51,9 +52,7 @@ module DatabaseLayer =
   | Short -> table.OrderType <- "Short"
   | Cover -> table.OrderType <- "Cover"
   table.Value <- data.Value
-  match isClosed with
-  | true -> table.IsClosed <- true
-  | false -> table.IsClosed <- false
+  table.IsClosed <- isClosed
   table
 
  type Database () = 
@@ -69,6 +68,7 @@ module DatabaseLayer =
   member this.InsertIterationData (data: Log*DateTime*DateTime) = 
    let newData = iterationToIterationTable data
    iterationTable.InsertOnSubmit(newData)
+   this.Commit()
    Some newData.IterationId
 
   /// Writes iteration data results to database.

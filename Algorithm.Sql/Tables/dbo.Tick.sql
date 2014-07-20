@@ -2,8 +2,7 @@
 (
 	[TickId] INT NOT NULL PRIMARY KEY IDENTITY, 
 	[Symbol] VARCHAR(10) NOT NULL,
-    [Date] DATE NOT NULL, 
-	[Time] TIME NOT NULL,
+    [Date] DATETIME NOT NULL, 
     [Open] DECIMAL(18, 2) NOT NULL, 
     [High] DECIMAL(18, 2) NOT NULL, 
     [Low] DECIMAL(18, 2) NOT NULL, 

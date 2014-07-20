@@ -58,13 +58,18 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Algorithm.Core\Algorithm.Core.fsproj">
-      <Project>{67e10d3d-ab07-433c-9632-1940207057ac}</Project>
+      <Project>{5cb5184e-2481-4f0c-8f53-58a44aed1843}</Project>
       <Name>Algorithm.Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\Core\DataCore.csproj">
       <Project>{ec23fcb3-67c9-47cb-80fe-eb91343fb7ae}</Project>
       <Name>DataCore</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
