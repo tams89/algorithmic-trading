@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30602.0
+VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest", "Test\UnitTest.csproj", "{5CCB2B52-8891-4D4B-989A-CADE03A1866E}"
 EndProject
@@ -19,6 +19,8 @@ EndProject
 Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "Algorithm.Sql", "Algorithm.Sql\Algorithm.Sql.sqlproj", "{825BCC95-EFEA-4467-BEEC-54384BBB4193}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Algorithm.Core", "Algorithm.Core\Algorithm.Core.fsproj", "{5CB5184E-2481-4F0C-8F53-58A44AED1843}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Algorithm.GUI", "Algorithm.GUI\Algorithm.GUI.csproj", "{C704C3CF-2D34-48EF-9825-D35EA09597E7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -87,6 +89,16 @@ Global
 		{5CB5184E-2481-4F0C-8F53-58A44AED1843}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{5CB5184E-2481-4F0C-8F53-58A44AED1843}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{5CB5184E-2481-4F0C-8F53-58A44AED1843}.Release|x86.ActiveCfg = Release|Any CPU
+		{C704C3CF-2D34-48EF-9825-D35EA09597E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C704C3CF-2D34-48EF-9825-D35EA09597E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C704C3CF-2D34-48EF-9825-D35EA09597E7}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{C704C3CF-2D34-48EF-9825-D35EA09597E7}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{C704C3CF-2D34-48EF-9825-D35EA09597E7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C704C3CF-2D34-48EF-9825-D35EA09597E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C704C3CF-2D34-48EF-9825-D35EA09597E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C704C3CF-2D34-48EF-9825-D35EA09597E7}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{C704C3CF-2D34-48EF-9825-D35EA09597E7}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{C704C3CF-2D34-48EF-9825-D35EA09597E7}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
