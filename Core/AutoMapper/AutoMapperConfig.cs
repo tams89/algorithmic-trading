@@ -2,7 +2,7 @@
 using Core.DTO;
 using Core.Model;
 
-namespace Core.AutoMapper
+namespace DataCore.AutoMapper
 {
     public class AutoMapperConfig
     {

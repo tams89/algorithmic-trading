@@ -1,4 +1,4 @@
-﻿using Core.AutoMapper;
+﻿using DataCore.AutoMapper;
 using NUnit.Framework;
 
 namespace Test.UnitTest

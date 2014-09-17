@@ -1,6 +1,5 @@
-﻿using System.Linq;
-using System.Windows;
-using Algorithm.Core.YahooFinanceService;
+﻿using System.Windows;
+using Algorithm.GUI.ViewModels;
 
 namespace Algorithm.GUI
 {
@@ -9,12 +8,10 @@ namespace Algorithm.GUI
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly Query.QueryService _queryService = new Query.QueryService("APPL");
-
         public MainWindow()
         {
             InitializeComponent();
-            var data = _queryService.GetStockPrice.ToList();
+            DataContext = new TickChartViewModel();
         }
     }
 }
