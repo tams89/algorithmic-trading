@@ -1,4 +1,4 @@
-## Algorithmic-Trading
+## Algorithmic Trading
 
 A prototype electronic trading solution, which currently supports back-testing using a an input of tick data. 
 
