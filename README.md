@@ -3,7 +3,7 @@
 A prototype electronic trading solution, which currently supports back-testing using a an input of tick data. 
 
 Key Notes:
-* Based primarily in F# with optimisations for Parallel Processing. 
+* Based primarily in F# with optimisations using Parallel Processing. 
 * F# Options pricing algorithms.
 * F# Volume Weighted Average Price execution algorithm.
 * Tests present in C# using NUnit, which reference components of the F# library.
